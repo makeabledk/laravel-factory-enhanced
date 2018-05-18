@@ -108,12 +108,25 @@ class RelationsTest extends TestCase
     }
 
     /** @test **/
-    function a_relation_can_be_created_multiple_times_in_separate_batches()
+    function nested_relations_can_be_specified_separate_function_calls()
     {
         $company = $this->factory(Company::class)
             ->with('owner')
             ->with(1, 'divisions')
             ->with(1, 'divisions.manager')
+            ->create();
+
+        $this->assertEquals(1, $company->divisions->count());
+        $this->assertInstanceOf(User::class, $company->divisions->first()->manager);
+    }
+
+    /** @test **/
+    function the_same_relation_can_be_created_multiple_times_using_and_with()
+    {
+        $company = $this->factory(Company::class)
+            ->with('owner')
+            ->with(1, 'divisions')
+            ->andWith(1, 'divisions.manager')
             ->create();
 
         $this->assertEquals(2, $company->divisions->count());

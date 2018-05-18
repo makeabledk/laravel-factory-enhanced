@@ -4,6 +4,9 @@ namespace Makeable\LaravelFactory;
 
 class Factory extends \Illuminate\Database\Eloquent\Factory
 {
+
+//    protected $stateProviders = [];
+
     /**
      * Create a builder for the given model.
      *
@@ -18,13 +21,18 @@ class Factory extends \Illuminate\Database\Eloquent\Factory
         return new FactoryBuilder($class, $name, $this->definitions, $this->states, $this->faker);
     }
 //
-//    public function definitionExists($definition)
+//    /**
+//     * Define a state with a given set of attributes.
+//     *
+//     * @param  string  $class
+//     * @param  string  $state
+//     * @param  callable|array  $attributes
+//     * @return $this
+//     */
+//    public function stateProvider($provider)
 //    {
+//        $this->stateProviders[] = $provider;
 //
-//    }
-//
-//    public function stateExists($state)
-//    {
-//
+//        return $this;
 //    }
 }

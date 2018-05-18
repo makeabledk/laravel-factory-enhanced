@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory;
 
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -71,6 +72,14 @@ class RelationManager
     /**
      * @return int
      */
+    public function getBatch()
+    {
+        return $this->batchIndex;
+    }
+
+    /**
+     * @return int
+     */
     public function newBatch()
     {
         return $this->batchIndex++;
@@ -81,53 +90,59 @@ class RelationManager
      */
     public function create(Model $parent)
     {
-        $relations = collect($this->relations);
+        collect($this->relations)
 
-        $relations
-            ->filter($this->relationTypeIs(BelongsTo::class))
-            ->map(function (array $batches, $relation) {
-                // Check for any given instances or create with factory
-                $results = array_get($this->instances, $relation, function () use ($batches) {
-                    return array_first($batches)->create();
+            // Create BelongsTo relations
+            ->tap(function (Collection $relations) use ($parent) { $relations
+                ->filter($this->relationTypeIs(BelongsTo::class))
+                ->map($this->fetchInstanceOrCreate())
+                ->each(function (Model $child, $relation) use ($parent) {
+                    $parent->$relation()->associate($child);
                 });
+            })
 
-                return $results instanceof Model ? $results : collect($results)->first();
-            })
-            ->each(function (Model $child, $relation) use ($parent) {
-                $parent->$relation()->associate($child);
-            })
-            ->pipe(function () use ($parent) {
+            // Persist model
+            ->tap(function () use ($parent) {
                 $parent->save();
+            })
+
+            // Create HasMany relations
+            ->tap(function (Collection $relations) use ($parent) { $relations
+                ->filter($this->relationTypeIs(HasOneOrMany::class))
+                ->each(function (array $batches, $relation) use ($parent) {
+                    foreach ($batches as $factory) {
+                        $factory
+                            ->fill([$parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey()])
+                            ->create();
+                    }
+                });
             });
-
-
-        $relations
-            ->filter($this->relationTypeIs(HasOneOrMany::class))
-            ->each(function (array $batches, $relation) use ($parent) {
-                foreach ($batches as $factory) {
-                    $factory
-                        ->fill([$parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey()])
-                        ->create();
-                }
-            });
-
-//        $this->createRelationsOfType($relations, BelongsToMany::class);
-//        $this->createRelationsOfType($relations, HasManyOneOrM::class);
-//        $this->createRelationsOfType($relations, HasOneOrMany::class); //?
-
-        // recursively create belongsTo
-        // create model
-        // create hasMany
-        // create belongsToMany
     }
 
+    /**
+     * @param $relationType
+     * @return Closure
+     */
     protected function relationTypeIs($relationType)
     {
         return function ($batches, $relation) use ($relationType) {
             return $this->model->$relation() instanceof $relationType;
         };
-
     }
 
+    /**
+     * Check for given instances or create with factory
+     *
+     * @return Closure
+     */
+    protected function fetchInstanceOrCreate()
+    {
+        return function ($batches, $relation) {
+            $results = array_get($this->instances, $relation, function () use ($batches) {
+                return array_first($batches)->create();
+            });
 
+            return $results instanceof Model ? $results : collect($results)->first();
+        };
+    }
 }

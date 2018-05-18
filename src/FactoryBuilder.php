@@ -121,35 +121,19 @@ class FactoryBuilder extends \Illuminate\Database\Eloquent\FactoryBuilder
      */
     public function with(...$args)
     {
-        if ($args[0] instanceof RelationRequest) {
-            $this->relations->add($args[0]);
-            return $this;
-        }
-//
-//        if (empty($relations[0])) {
-//            return $this;
-//        }
-//
-        if (count($args) === 1 && is_array($args[0])) {
-            $relations = $args[0]; // An associative array was given
-        }
-        else {
-            $relations = [$args]; // Separate args was given
-        }
-
-        $batch = $this->relations->newBatch();
-
-        collect($relations)->each(function ($args, $key) use ($batch) {
-            $args = Arr::wrap($args);
-
-            // Relations is an associative array and the key is the relations path
-            if (! is_numeric($key)) {
-                array_push($args, $key);
-            }
-
-            $this->relations->add(new RelationRequest($batch, $this->class, $args));
-        });
+        (new RelationArgumentParser(...$args))
+            ->get($this->relations->getBatch(), $this->class)
+            ->each(function ($request) {
+                $this->relations->add($request);
+            });
 
         return $this;
+    }
+
+    public function andWith(...$args)
+    {
+        $this->relations->newBatch();
+
+        return $this->with(...$args);
     }
 }

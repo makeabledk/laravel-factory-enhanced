@@ -6,9 +6,12 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
+use Makeable\LaravelFactory\Concerns\HasPrototypeAttributes;
 
 class RelationRequest
 {
+    use HasPrototypeAttributes;
+
     protected $model;
 
     public $batch;
@@ -17,12 +20,12 @@ class RelationRequest
 
 
     public $instances;
-
-    public $builder;
-
-    public $states;
-
-    public $times;
+//
+//    public $builder;
+//
+//    public $states;
+//
+//    public $times;
 
     public function __construct($batch, $class, $args)
     {
@@ -51,6 +54,29 @@ class RelationRequest
 
             throw new \BadMethodCallException('Could not recognize argument '. $arg);
         });
+    }
+
+    /**
+     * @param FactoryBuilder $factory
+     */
+    public function applyFactory($factory)
+    {
+        $factory->states($this->activeStates);
+        $factory->times($this->amount);
+        $factory->build($this->builders);
+
+//            if ($request->states !== null) {
+//                $factory->states($request->states);
+//            }
+//
+//            if ($request->times !== null) {
+//                $factory->times($request->times);
+//            }
+//
+//            if ($request->builder !== null) {
+//                $factory->build($request->builder);
+////                call_user_func($request->builder, $factory);
+//            }
     }
 
     /**

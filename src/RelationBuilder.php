@@ -9,22 +9,45 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Support\Collection;
+use Makeable\LaravelFactory\Concerns\CollectsModels;
 
-class RelationManager
+class RelationBuilder
 {
+    use CollectsModels;
+
+    /**
+     * @var int
+     */
     protected $batchIndex = 0;
 
+    /**
+     * @var string
+     */
     protected $model;
 
+    /**
+     * @var null | array
+     */
     protected $instances;
 
+    /**
+     * @var array
+     */
     protected $relations = [];
 
+    /**
+     * RelationBuilder constructor.
+     * @param $class
+     */
     public function __construct($class)
     {
         $this->model = new $class;
     }
 
+    /**
+     * @param RelationRequest $request
+     * @return $this
+     */
     public function add(RelationRequest $request)
     {
         $factory = $this->makeFactory($request);
@@ -33,17 +56,7 @@ class RelationManager
             $factory->with($request->createNestedRequest());
         }
         else {
-            if ($request->states !== null) {
-                $factory->states($request->states);
-            }
-
-            if ($request->times !== null) {
-                $factory->times($request->times);
-            }
-
-            if ($request->builder !== null) {
-                call_user_func($request->builder, $factory);
-            }
+            $request->applyFactory($factory);
 
             if ($request->instances !== null) {
                 $this->instances[$request->getRelationName()] = $request->instances;
@@ -111,9 +124,9 @@ class RelationManager
                 ->filter($this->relationTypeIs(HasOneOrMany::class))
                 ->each(function (array $batches, $relation) use ($parent) {
                     foreach ($batches as $factory) {
-                        $factory
-                            ->fill([$parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey()])
-                            ->create();
+                        $factory->create([
+                            $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey()
+                        ]);
                     }
                 });
             });
@@ -138,11 +151,11 @@ class RelationManager
     protected function fetchInstanceOrCreate()
     {
         return function ($batches, $relation) {
-            $results = array_get($this->instances, $relation, function () use ($batches) {
-                return array_first($batches)->create();
-            });
-
-            return $results instanceof Model ? $results : collect($results)->first();
+            return $this->collectModel(
+                array_get($this->instances, $relation, function () use ($batches) {
+                    return array_first($batches)->create();
+                })
+            );
         };
     }
 }

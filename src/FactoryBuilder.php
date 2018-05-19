@@ -6,34 +6,73 @@ use Closure;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Traits\Macroable;
+use Makeable\LaravelFactory\Concerns\CollectsModels;
+use Makeable\LaravelFactory\Concerns\HasPrototypeAttributes;
+use Makeable\LaravelFactory\Concerns\HasRelations;
 
-class FactoryBuilder extends \Illuminate\Database\Eloquent\FactoryBuilder
+class FactoryBuilder
 {
-    /**
-     * @var array
-     */
-    protected $relations = [];
+    use HasPrototypeAttributes,
+        HasRelations,
+        Macroable;
 
     /**
-     * @var array
+     * The database connection on which the model instance should be persisted.
+     *
+     * @var string
      */
-    protected $attributes = [];
+    protected $connection;
+
+    /**
+     * The Faker instance for the builder.
+     *
+     * @var \Faker\Generator
+     */
+    protected $faker;
+
+    /**
+     * The model states.
+     *
+     * @var StateManager
+     */
+    protected $states;
+
+    /**
+     * The model being built.
+     *
+     * @var string
+     */
+    protected $class;
 
     /**
      * Create an new builder instance.
      *
      * @param  string  $class
      * @param  string  $name
-     * @param  array  $definitions
-     * @param  array  $states
+     * @param  StateManager $states
      * @param  \Faker\Generator  $faker
      * @return void
      */
-    public function __construct($class, $name, array $definitions, array $states, Faker $faker)
+    public function __construct($class, $name, StateManager $states, Faker $faker)
     {
-        parent::__construct(...func_get_args());
+        $this->name = $name;
+        $this->class = $class;
+        $this->faker = $faker;
+        $this->states = $states;
+    }
 
-        $this->relations = new RelationManager($class);
+    /**
+     * Set the database connection on which the model instance should be persisted.
+     *
+     * @param  string  $name
+     * @return $this
+     */
+    public function connection($name)
+    {
+        $this->connection = $name;
+
+        return $this;
     }
 
     /**
@@ -45,34 +84,95 @@ class FactoryBuilder extends \Illuminate\Database\Eloquent\FactoryBuilder
     }
 
     /**
-     * @param array $attributes
-     * @return $this
+     * Create a model and persist it in the database if requested.
+     *
+     * @param  array  $attributes
+     * @return \Closure
      */
-    public function fill(array $attributes)
+    public function lazy(array $attributes = [])
     {
-        $this->attributes = array_merge($this->attributes, $attributes);
+        return function () use ($attributes) {
+            return $this->create($attributes);
+        };
+    }
+
+    /**
+     * @param mixed ...$args
+     * @return FactoryBuilder
+     */
+    public function with(...$args)
+    {
+        $builder = new RelationRequestBuilder($this->relationsBatchIndex, $this->class);
+        $builder->all(...$args)->each(function ($request) {
+            $this->loadRelation($request);
+        });
 
         return $this;
     }
 
     /**
-     * Get a raw attributes array for the model.
+     * @param mixed ...$args
+     * @return FactoryBuilder
+     */
+    public function andWith(...$args)
+    {
+        $this->relationsBatchIndex++;
+
+        return $this->with(...$args);
+    }
+
+    /**
+     * Create a collection of models and persist them to the database.
      *
      * @param  array  $attributes
      * @return mixed
      */
-    protected function getRawAttributes(array $attributes = [])
+    public function create(array $attributes = [])
     {
-        $definition = call_user_func(
-            data_get($this->definitions, "{$this->class}.{$this->name}") ?: function () {
-                return [];
-            },
-            $this->faker, $attributes
-        );
+        $results = $this->make($attributes);
 
-        return $this->expandAttributes(
-            array_merge($this->applyStates($definition, $attributes), $this->attributes, $attributes)
-        );
+        $this->store($results);
+
+        return $results;
+    }
+
+    /**
+     * Set the connection name on the results and store them.
+     *
+     * @param  \Illuminate\Support\Collection  $results
+     * @return void
+     */
+    protected function store($results)
+    {
+        $this->collect($results)->each(function (Model $model) {
+            if (! isset($this->connection)) {
+                $model->setConnection($model->newQueryWithoutScopes()->getConnection()->getName());
+            }
+
+            $this->createBelongsTo($model);
+            $this->createHasMany(tap($model)->create());
+        });
+    }
+
+    /**
+     * Create a collection of models.
+     *
+     * @param  array  $attributes
+     * @return mixed
+     */
+    public function make(array $attributes = [])
+    {
+        if ($this->amount === null) {
+            return $this->makeInstance($attributes);
+        }
+
+        if ($this->amount < 1) {
+            return (new $this->class)->newCollection();
+        }
+
+        return (new $this->class)->newCollection(array_map(function () use ($attributes) {
+            return $this->makeInstance($attributes);
+        }, range(1, $this->amount)));
     }
 
     /**
@@ -99,41 +199,72 @@ class FactoryBuilder extends \Illuminate\Database\Eloquent\FactoryBuilder
     }
 
     /**
-     * Set the connection name on the results and store them.
+     * Create an array of raw attribute arrays.
      *
-     * @param  \Illuminate\Support\Collection  $results
-     * @return void
+     * @param  array  $attributes
+     * @return mixed
      */
-    protected function store($results)
+    public function raw(array $attributes = [])
     {
-        $results->each(function (Model $model) {
-            if (! isset($this->connection)) {
-                $model->setConnection($model->newQueryWithoutScopes()->getConnection()->getName());
-            }
+        if ($this->amount === null) {
+            return $this->getRawAttributes($attributes);
+        }
 
-            $this->relations->create($model);
-        });
+        if ($this->amount < 1) {
+            return [];
+        }
+
+        return array_map(function () use ($attributes) {
+            return $this->getRawAttributes($attributes);
+        }, range(1, $this->amount));
     }
 
     /**
-     * @param array $args
-     * @return FactoryBuilder
+     * Get a raw attributes array for the model.
+     *
+     * @param  array  $attributes
+     * @return mixed
      */
-    public function with(...$args)
+    protected function getRawAttributes(array $attributes = [])
     {
-        (new RelationArgumentParser(...$args))
-            ->get($this->relations->getBatch(), $this->class)
-            ->each(function ($request) {
-                $this->relations->add($request);
-            });
+        $stateAttributes =
+            collect([
+                $this->states->getDefinition($this->class, $this->name),
+                $this->states->getStates($this->class, $this->activeStates),
+                $this->builders
+            ])
+            ->collapse()
+            ->reduce(function ($builder, $attributes) {
+                return array_merge($attributes, call_user_func($builder, $this, $this->faker));
+            }, []);
 
-        return $this;
+        return $this->expandAttributes(
+            array_merge($stateAttributes, $this->attributes, $attributes)
+        );
     }
 
-    public function andWith(...$args)
+    /**
+     * Expand all attributes to their underlying values.
+     *
+     * @param  array  $attributes
+     * @return array
+     */
+    protected function expandAttributes(array $attributes)
     {
-        $this->relations->newBatch();
+        foreach ($attributes as &$attribute) {
+            if (is_callable($attribute) && ! is_string($attribute)) {
+                $attribute = $attribute($attributes);
+            }
 
-        return $this->with(...$args);
+            if ($attribute instanceof static) {
+                $attribute = $attribute->create()->getKey();
+            }
+
+            if ($attribute instanceof Model) {
+                $attribute = $attribute->getKey();
+            }
+        }
+
+        return $attributes;
     }
 }

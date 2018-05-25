@@ -1,5 +1,6 @@
 <?php
 
+
 namespace Makeable\LaravelFactory;
 
 use Closure;
@@ -8,12 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
 use Makeable\LaravelFactory\Concerns\CollectsModels;
-use Makeable\LaravelFactory\Concerns\HasPrototypeAttributes;
+use Makeable\LaravelFactory\Concerns\PrototypesModels;
 use Makeable\LaravelFactory\Concerns\HasRelations;
 
 class FactoryBuilder
 {
-    use HasPrototypeAttributes,
+    use PrototypesModels,
         HasRelations,
         Macroable;
 
@@ -150,7 +151,8 @@ class FactoryBuilder
             }
 
             $this->createBelongsTo($model);
-            $this->createHasMany(tap($model)->create());
+            $model->save();
+            $this->createHasMany($model);
         });
     }
 
@@ -162,17 +164,58 @@ class FactoryBuilder
      */
     public function make(array $attributes = [])
     {
+        return $this
+            ->buildPrototype()
+            ->buildResults([new $this->class, 'newCollection'], function () use ($attributes) {
+                return $this->makeInstance($attributes);
+            });
+    }
+
+    /**
+     * Create an array of raw attribute arrays.
+     *
+     * @param  array  $attributes
+     * @return mixed
+     */
+    public function raw(array $attributes = [])
+    {
+        return $this
+            ->buildPrototype()
+            ->buildResults([Arr::class, 'wrap'], function () use ($attributes) {
+                return $this->getRawAttributes($attributes);
+            });
+    }
+
+    protected function buildPrototype()
+    {
+        $this->lazyFill = [];
+
+        collect($this->states->getDefinition($this->class, $this->name))
+            ->concat($this->states->getStates($this->class, $this->activeStates))
+            ->concat($this->builders)
+            ->each(function ($builder) {
+                call_user_func($builder, $this); //, $this->faker
+            });
+
+        return $this;
+    }
+
+    /**
+     * @param callable $collect
+     * @param callable $item
+     * @return mixed
+     */
+    protected function buildResults($collect, $item)
+    {
         if ($this->amount === null) {
-            return $this->makeInstance($attributes);
+            return call_user_func($item);
         }
 
         if ($this->amount < 1) {
-            return (new $this->class)->newCollection();
+            return call_user_func($collect);
         }
 
-        return (new $this->class)->newCollection(array_map(function () use ($attributes) {
-            return $this->makeInstance($attributes);
-        }, range(1, $this->amount)));
+        return call_user_func($collect, array_map($item, range(1, $this->amount)));
     }
 
     /**
@@ -199,27 +242,6 @@ class FactoryBuilder
     }
 
     /**
-     * Create an array of raw attribute arrays.
-     *
-     * @param  array  $attributes
-     * @return mixed
-     */
-    public function raw(array $attributes = [])
-    {
-        if ($this->amount === null) {
-            return $this->getRawAttributes($attributes);
-        }
-
-        if ($this->amount < 1) {
-            return [];
-        }
-
-        return array_map(function () use ($attributes) {
-            return $this->getRawAttributes($attributes);
-        }, range(1, $this->amount));
-    }
-
-    /**
      * Get a raw attributes array for the model.
      *
      * @param  array  $attributes
@@ -227,19 +249,12 @@ class FactoryBuilder
      */
     protected function getRawAttributes(array $attributes = [])
     {
-        $stateAttributes =
-            collect([
-                $this->states->getDefinition($this->class, $this->name),
-                $this->states->getStates($this->class, $this->activeStates),
-                $this->builders
-            ])
-            ->collapse()
-            ->reduce(function ($builder, $attributes) {
-                return array_merge($attributes, call_user_func($builder, $this, $this->faker));
-            }, []);
+        $lazyAttributes = collect($this->lazyFill)->reduce(function ($attributes, $fill) {
+            return array_merge($attributes, call_user_func($fill, $this->faker));
+        }, []);
 
         return $this->expandAttributes(
-            array_merge($stateAttributes, $this->attributes, $attributes)
+            array_merge($this->attributes, $lazyAttributes, $attributes)
         );
     }
 

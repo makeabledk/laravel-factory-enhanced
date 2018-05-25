@@ -6,27 +6,37 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
-use Makeable\LaravelFactory\Concerns\HasPrototypeAttributes;
+use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
-    use HasPrototypeAttributes;
+    use PrototypesModels;
 
+    /**
+     * @var Model
+     */
     protected $model;
 
+    /**
+     * @var int
+     */
     public $batch;
 
+    /**
+     * @var string
+     */
     public $path;
 
-
+    /**
+     * @var Collection
+     */
     public $instances;
-//
-//    public $builder;
-//
-//    public $states;
-//
-//    public $times;
 
+    /**
+     * @param $batch
+     * @param $class
+     * @param $args
+     */
     public function __construct($batch, $class, $args)
     {
         $this->batch = $batch;
@@ -34,10 +44,10 @@ class RelationRequest
 
         collect($args)->each(function ($arg) {
             if (is_numeric($arg)) {
-                return $this->times = $arg;
+                return $this->times($arg);
             }
             if ($arg instanceof Closure) {
-                return $this->builder = $arg;
+                return $this->build($arg);
             }
             if ($arg instanceof Model) {
                 return $this->instances = collect([$arg]);
@@ -49,34 +59,11 @@ class RelationRequest
                 return $this->path = $arg;
             }
             if ($this->isValidState($arg)) {
-                return $this->states = $arg;
+                return $this->states($arg);
             }
 
             throw new \BadMethodCallException('Could not recognize argument '. $arg);
         });
-    }
-
-    /**
-     * @param FactoryBuilder $factory
-     */
-    public function applyFactory($factory)
-    {
-        $factory->states($this->activeStates);
-        $factory->times($this->amount);
-        $factory->build($this->builders);
-
-//            if ($request->states !== null) {
-//                $factory->states($request->states);
-//            }
-//
-//            if ($request->times !== null) {
-//                $factory->times($request->times);
-//            }
-//
-//            if ($request->builder !== null) {
-//                $factory->build($request->builder);
-////                call_user_func($request->builder, $factory);
-//            }
     }
 
     /**

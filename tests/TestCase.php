@@ -31,15 +31,26 @@ class TestCase extends BaseTestCase
             $migrator->path(__DIR__.'/migrations/');
         });
 
-        $this->factory()->define(Company::class, function (Generator $faker) {
+        $this->factory()->define(Company::class, function (FactoryBuilder $builder, Generator $faker) {
             return [
                 'name' => $faker->company
             ];
         });
 
-        $this->factory()->define(Division::class, function (Generator $faker) {
+        $this->factory()->define(Division::class, function (FactoryBuilder $builder, Generator $faker) {
             return [
                 'name' => $faker->company
+            ];
+        });
+
+        $this->factory()->define(User::class, function (FactoryBuilder $builder, Generator $faker) {
+            static $password;
+
+            return [
+                'name' => $faker->name,
+                'email' => $faker->unique()->safeEmail,
+                'password' => $password ?: $password = bcrypt('secret'),
+                'remember_token' => str_random(10),
             ];
         });
 

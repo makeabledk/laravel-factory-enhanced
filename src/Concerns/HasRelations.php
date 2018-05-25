@@ -39,13 +39,13 @@ trait HasRelations
      */
     public function loadRelation(RelationRequest $request)
     {
-        $factory = $this->makeFactoryForRequest($request);
+        $factory = $this->buildFactoryForRequest($request);
 
         if ($request->hasNesting()) {
             $factory->with($request->createNestedRequest());
         }
         else {
-            $factory->mergeAttributes($request);
+            $factory->mergePrototype($request->toPrototype());
 
             if ($request->instances !== null) {
                 $this->instances[$request->getRelationName()] = $request->instances;
@@ -59,7 +59,7 @@ trait HasRelations
      * @param RelationRequest $request
      * @return FactoryBuilder
      */
-    protected function makeFactoryForRequest($request)
+    protected function buildFactoryForRequest($request)
     {
         $relation = $request->getRelationName();
         $batch = $request->batch;
@@ -76,6 +76,8 @@ trait HasRelations
      */
     protected function createBelongsTo(Model $child)
     {
+//        dd($this->relations);
+
         collect($this->relations)
             ->filter($this->relationTypeIs(BelongsTo::class))
             ->map($this->fetchFromInstancesOrCreate())
@@ -108,7 +110,7 @@ trait HasRelations
     protected function relationTypeIs($relationType)
     {
         return function ($batches, $relation) use ($relationType) {
-            return $this->model->$relation() instanceof $relationType;
+            return (new $this->class)->$relation() instanceof $relationType;
         };
     }
 

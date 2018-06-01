@@ -3,28 +3,18 @@
 
 namespace Makeable\LaravelFactory;
 
-use Closure;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
-use Makeable\LaravelFactory\Concerns\PrototypesModels;
 use Makeable\LaravelFactory\Concerns\HasRelations;
 
 class FactoryBuilder
 {
-    use //PrototypesModels,
-        NormalizesAttributes,
+    use NormalizesAttributes,
         HasRelations,
         Macroable;
-
-    /**
-     * The database connection on which the model instance should be persisted.
-     *
-     * @var string
-     */
-    protected $connection;
 
     /**
      * The Faker instance for the builder.
@@ -34,16 +24,23 @@ class FactoryBuilder
     protected $faker;
 
     /**
-     * @var string
-     */
-    protected $name;
-
-    /**
      * The model states.
      *
      * @var StateManager
      */
     protected $states;
+
+    /**
+     * The database connection on which the model instance should be persisted.
+     *
+     * @var string
+     */
+    protected $connection;
+
+    /**
+     * @var string
+     */
+    protected $name;
 
     /**
      * The model being built.
@@ -57,6 +54,9 @@ class FactoryBuilder
      */
     protected $amount;
 
+    /**
+     * @var array
+     */
     protected $activeStates = [];
 
     /**
@@ -281,7 +281,7 @@ class FactoryBuilder
     protected function getRawAttributes(array $attributes = [])
     {
         return $this->expandAttributes(
-            collect([$this->states->getDefinition($this->class, $this->name)])
+            collect($this->states->getDefinition($this->class, $this->name))
                 ->concat($this->attributes)
                 ->concat(collect($this->activeStates)->map(function ($state) {
                     return $this->states->getState($this->class, $state);

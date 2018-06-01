@@ -12,7 +12,7 @@ use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\RelationRequest;
 
-trait HasRelations
+trait BuildsRelationships
 {
     /**
      * @var int
@@ -176,5 +176,17 @@ trait HasRelations
         if ($this->connection === null && (new $this->class)->getConnectionName() === null) {
             return $this->connection($factory->connection);
         }
+    }
+
+    /**
+     * Create a new batch of relations
+     *
+     * @return FactoryBuilder
+     */
+    protected function newBatch()
+    {
+        $this->relationsBatchIndex++;
+
+        return $this;
     }
 }

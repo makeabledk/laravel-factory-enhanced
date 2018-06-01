@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
-use Makeable\LaravelFactory\Concerns\HasRelations;
+use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 
 class FactoryBuilder
 {
-    use NormalizesAttributes,
-        HasRelations,
+    use BuildsRelationships,
+        NormalizesAttributes,
         Macroable;
 
     /**
@@ -167,9 +167,7 @@ class FactoryBuilder
      */
     public function andWith(...$args)
     {
-        $this->relationsBatchIndex++;
-
-        return $this->with(...$args);
+        return $this->newBatch()->with(...$args);
     }
 
     /**

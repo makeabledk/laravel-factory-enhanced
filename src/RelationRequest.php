@@ -11,30 +11,36 @@ use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
-//    use PrototypesModels;
-
     /**
+     * The parent model requesting relations.
+     *
      * @var Model
      */
     protected $model;
 
     /**
+     * The batch number.
+     *
      * @var int
      */
     public $batch;
 
     /**
+     * The (possibly nested) relations path.
+     *
      * @var string
      */
     public $path;
 
     /**
+     * The bound instances.
+     *
      * @var Collection
      */
     public $instances;
 
     /**
-     * The number of models to build.
+     * The number of related models to build.
      *
      * @var int|null
      */
@@ -48,36 +54,54 @@ class RelationRequest
     public $states = [];
 
     /**
+     * A build function.
+     *
      * @var array
      */
     public $builder = null;
 
     /**
+     * Create a new relationship request.
+     *
      * @param $batch
      * @param $class
      * @param $args
      */
     public function __construct($batch, $class, $args)
     {
-        $this->batch = $batch;
-        $this->model = new $class;
+        list ($this->batch, $this->model) = [$batch, new $class];
 
+        $this->parseArgs($args);
+    }
+
+    /**
+     * Parse the arguments given to 'with' .
+     *
+     * @param array $args
+     */
+    protected function parseArgs($args)
+    {
         collect($args)->each(function ($arg) {
             if (is_numeric($arg)) {
                 return $this->amount = $arg;
             }
+
             if ($arg instanceof Closure) {
                 return $this->builder = $arg;
             }
+
             if ($arg instanceof Model) {
                 return $this->instances = collect([$arg]);
             }
+
             if ($arg instanceof Collection) {
                 return $this->instances = $arg;
             }
+
             if ($this->isValidRelation($arg)) {
                 return $this->path = $arg;
             }
+
             if ($this->isValidState($arg)) {
                 return array_push($this->states, $arg);
             }
@@ -87,6 +111,8 @@ class RelationRequest
     }
 
     /**
+     * Create a new relationship request for nested relations.
+     *
      * @return static
      */
     public function createNestedRequest()
@@ -95,18 +121,9 @@ class RelationRequest
     }
 
     /**
-     * @param null $path
-     * @return mixed
-     */
-    public function getRelationName($path = null)
-    {
-        $nested = explode('.', $path ?: $this->path);
-
-        return array_shift($nested);
-    }
-
-    /**
-     * @return Model
+     * Get the class name of the related eloquent model.
+     *
+     * @return string
      */
     public function getRelatedClass()
     {
@@ -116,7 +133,9 @@ class RelationRequest
     }
 
     /**
-     * @param null $path
+     * Get the nested path beyond immediate relation.
+     *
+     * @param string|null $path
      * @return string
      */
     public function getNestedPath($path = null)
@@ -129,14 +148,31 @@ class RelationRequest
     }
 
     /**
-     * @return bool|int
+     * Get the name of the immediate relation.
+     *
+     * @param string|null $path
+     * @return mixed
      */
-    public function hasNesting()
+    public function getRelationName($path = null)
     {
-        return strpos($this->path, '.');
+        $nested = explode('.', $path ?: $this->path);
+
+        return array_shift($nested);
     }
 
     /**
+     * Check if has nesting.
+     *
+     * @return bool
+     */
+    public function hasNesting()
+    {
+        return strpos($this->path, '.') !== false;
+    }
+
+    /**
+     * Check if a string represents a valid relation path.
+     *
      * @param $path
      * @return bool
      */
@@ -148,6 +184,8 @@ class RelationRequest
     }
 
     /**
+     * Check if a string represents a valid state for related model.
+     *
      * @param $arg
      * @return bool
      */

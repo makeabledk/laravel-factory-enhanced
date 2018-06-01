@@ -38,6 +38,8 @@ class FactoryBuilder
     protected $connection;
 
     /**
+     * Name of the definition.
+     *
      * @var string
      */
     protected $name;
@@ -50,16 +52,22 @@ class FactoryBuilder
     protected $class;
 
     /**
+     * The number of models to build.
+     *
      * @var int | null
      */
     protected $amount;
 
     /**
+     * The states to apply.
+     *
      * @var array
      */
     protected $activeStates = [];
 
     /**
+     * Attributes to apply.
+     *
      * @var array
      */
     protected $attributes = [];
@@ -95,6 +103,8 @@ class FactoryBuilder
     }
 
     /**
+     * Fill attributes on the model.
+     *
      * @param array|callable $attributes
      * @return $this
      */
@@ -132,6 +142,8 @@ class FactoryBuilder
     }
 
     /**
+     * Build the model with specified relations.
+     *
      * @param mixed ...$args
      * @return FactoryBuilder
      */
@@ -146,6 +158,10 @@ class FactoryBuilder
     }
 
     /**
+     * Build with relations in a new batch (not belongs-to).
+     *
+     * This allows to create add multiple sets of the same relation.
+     *
      * @param mixed ...$args
      * @return FactoryBuilder
      */
@@ -155,8 +171,6 @@ class FactoryBuilder
 
         return $this->with(...$args);
     }
-
-    // _________________________________________________________________________________________________________________
 
     /**
      * Create a model and persist it in the database if requested.
@@ -233,6 +247,8 @@ class FactoryBuilder
     }
 
     /**
+     * Build the results to either a single item or collection of items.
+     *
      * @param callable $collect
      * @param callable $item
      * @return mixed

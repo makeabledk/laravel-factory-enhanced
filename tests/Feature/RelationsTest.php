@@ -43,8 +43,6 @@ class RelationsTest extends TestCase
             ->with(2, 'employees')
             ->create();
 
-//        $division->employees()->saveMany($this->factory(User::class)->times(2)->make());
-
         $this->assertInstanceOf(User::class, $division->employees->first());
         $this->assertEquals(2, $division->employees->count());
     }
@@ -156,7 +154,7 @@ class RelationsTest extends TestCase
     }
 
     /** @test **/
-    function it_will_associate_first_item_in_a_belongs_to_collection_instead_of_creating_through_factory()
+    function it_will_associate_only_the_first_item_in_a_belongs_to_collection()
     {
         $users = $this->factory(User::class)->times(2)->create();
         $company = $this->factory(Company::class)
@@ -166,15 +164,33 @@ class RelationsTest extends TestCase
         $this->assertEquals(2, User::count());
         $this->assertEquals($users->first()->id, $company->owner->id);
     }
-//
-//    /** @test **/
-//    function it_accepts_a_collection_of_instances_instead_of_creating_through_factory()
-//    {
-//        $divisions = $this->factory(Division::class)->times(2)->create();
-//        $company = $this->factory(Company::class)
-//            ->with('divisions', $divisions)
-//            ->create();
-//
-//        $this->assertEquals([1,2], $company->divisions->pluck('id'));
-//    }
+
+    /** @test **/
+    function it_accepts_a_collection_of_instances_to_use_for_belongs_to_many_relations()
+    {
+        $users = $this->factory(User::class)->times(2)->create();
+        $division = $this->factory(Division::class)
+            ->with('employees', $users)
+            ->create();
+
+        $this->assertEquals([1,2], $division->employees->pluck('id')->toArray());
+    }
+
+    /** @test **/
+    function it_accepts_a_collection_of_instances_and_tops_up_with_factory_to_specified_amount()
+    {
+        // Top up with 1 factory employee
+        $division1 = $this->factory(Division::class)
+            ->with(3, 'employees', $this->factory(User::class)->times(2)->create())
+            ->create();
+
+        $this->assertEquals([1,2,3], $division1->employees->pluck('id')->toArray());
+
+        // Slice given users to 2 employees
+        $division2 = $this->factory(Division::class)
+            ->with(2, 'employees', $this->factory(User::class)->times(3)->create())
+            ->create();
+
+        $this->assertEquals([4,5], $division2->employees->pluck('id')->toArray());
+    }
 }

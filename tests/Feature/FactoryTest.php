@@ -16,18 +16,6 @@ class FactoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    //        dd($this->user());
-
-
-//        dd($this->factory()->of(User::class)->create());
-//
-//        $factory = Factory::make(User::class)
-//            ->with(3, 'active', 'companies.divisions');
-//
-//        dd($factory->relations);
-//            ->create();
-
-
     /** @test **/
     function it_creates_models_with_no_relations()
     {
@@ -39,6 +27,13 @@ class FactoryTest extends TestCase
     {
         $this->assertInstanceOf(Customer::class, $this->factory(Customer::class)->create());
     }
+//
+//    /** @test **/
+//    public function it_applies_states()
+//    {
+//
+//    }
+
 
     function syntax()
     {

@@ -5,6 +5,7 @@ namespace Makeable\LaravelFactory\Tests;
 use App\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Hash;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\FactoryServiceProvider;
@@ -42,16 +43,8 @@ class TestCase extends BaseTestCase
             ];
         });
 
-//        $this->factory()->define(User::class, function (Gener) {
-//            static $password;
-//
-//            return [
-//                'name' => $faker->name,
-//                'email' => $faker->unique()->safeEmail,
-//                'password' => $password ?: $password = bcrypt('secret'),
-//                'remember_token' => str_random(10),
-//            ];
-//        });
+        // Make tests faster!
+        Hash::setRounds(4);
 
         return $app;
     }

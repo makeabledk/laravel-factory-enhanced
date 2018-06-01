@@ -176,7 +176,7 @@ trait BuildsRelationships
     protected function topUp($models)
     {
         $models = $this->collect($models);
-        $targetItems = $this->amount ?? 1;
+        $targetItems = $this->amount ?? max(1, $models->count());
 
         if (($missing = $targetItems - $models->count()) > 0) {
             $originalAmount = $this->amount;

@@ -5,9 +5,7 @@ namespace Makeable\LaravelFactory;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
@@ -63,11 +61,11 @@ class RelationRequest
     /**
      * Create a new relationship request.
      *
-     * @param $batch
      * @param $class
+     * @param $batch
      * @param $args
      */
-    public function __construct($batch, $class, $args)
+    public function __construct($class, $batch, $args)
     {
         list ($this->batch, $this->model) = [$batch, new $class];
 
@@ -86,7 +84,7 @@ class RelationRequest
                 return $this->amount = $arg;
             }
 
-            if ($arg instanceof Closure) {
+            if (is_callable($arg) && ! is_string($arg)) {
                 return $this->builder = $arg;
             }
 
@@ -102,11 +100,8 @@ class RelationRequest
                 return $this->path = $arg;
             }
 
-            if ($this->isValidState($arg)) {
-                return array_push($this->states, $arg);
-            }
-
-            throw new \BadMethodCallException('Could not recognize argument '. $arg);
+            // If nothing else, we'll assume $arg represent some state
+            array_push($this->states, $arg);
         });
     }
 
@@ -117,7 +112,7 @@ class RelationRequest
      */
     public function createNestedRequest()
     {
-        return new static($this->batch, $this->getRelatedClass(), $this->getNestedPath());
+        return new static($this->getRelatedClass(), $this->batch, $this->getNestedPath());
     }
 
     /**
@@ -181,16 +176,5 @@ class RelationRequest
         $relation = $this->getRelationName($path);
 
         return method_exists($this->model, $relation) && $this->model->$relation() instanceof Relation;
-    }
-
-    /**
-     * Check if a string represents a valid state for related model.
-     *
-     * @param $arg
-     * @return bool
-     */
-    protected function isValidState($arg)
-    {
-        return false;
     }
 }

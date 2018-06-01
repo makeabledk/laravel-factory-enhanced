@@ -91,7 +91,7 @@ class RelationRequestBuilder
                 array_push($args, $key);
             }
 
-            return new RelationRequest($this->batch, $this->class, $args);
+            return new RelationRequest($this->class, $this->batch, $args);
         });
     }
 }

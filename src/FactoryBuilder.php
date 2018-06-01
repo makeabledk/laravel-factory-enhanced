@@ -14,7 +14,7 @@ use Makeable\LaravelFactory\Concerns\HasRelations;
 
 class FactoryBuilder
 {
-    use PrototypesModels,
+    use //PrototypesModels,
         HasRelations,
         Macroable;
 
@@ -46,6 +46,11 @@ class FactoryBuilder
      */
     protected $class;
 
+
+    protected $amount;
+
+    protected $attributes = [];
+
     /**
      * Create an new builder instance.
      *
@@ -57,10 +62,12 @@ class FactoryBuilder
      */
     public function __construct($class, $name, StateManager $states, Faker $faker)
     {
-        $this->name = $name;
+//        $this->name = $name;
         $this->class = $class;
         $this->faker = $faker;
         $this->states = $states;
+
+        $this->fill($states->getDefinition($this->class, $name));
     }
 
     /**
@@ -77,24 +84,48 @@ class FactoryBuilder
     }
 
     /**
-     * @return Faker
+     * @param array|callable $attributes
+     * @return $this
      */
-    public function fake()
+    public function fill($attributes)
     {
-        return $this->faker;
+        if (! is_callable($attributes)) {
+            $attributes = function () use ($attributes) {
+                return $attributes;
+            };
+        }
+
+        array_push($this->attributes, $attributes);
+
+        return $this;
     }
 
     /**
-     * Create a model and persist it in the database if requested.
+     * Set the states to be applied to the model.
      *
-     * @param  array  $attributes
-     * @return \Closure
+     * @param  array|mixed  $states
+     * @return $this
      */
-    public function lazy(array $attributes = [])
+    public function states($states)
     {
-        return function () use ($attributes) {
-            return $this->create($attributes);
-        };
+        collect(is_array($states) ? $states : func_get_args())->each(function ($state) {
+            $this->fill($this->states->getState($this->class, $state));
+        });
+
+        return $this;
+    }
+
+    /**
+     * Set the amount of models you wish to create / make.
+     *
+     * @param  int  $amount
+     * @return $this
+     */
+    public function times($amount)
+    {
+        $this->amount = $amount;
+
+        return $this;
     }
 
     /**
@@ -120,6 +151,26 @@ class FactoryBuilder
         $this->relationsBatchIndex++;
 
         return $this->with(...$args);
+    }
+//
+//    protected function applyBuilder($callable)
+//    {
+//        call_user_func($callable, $this);
+//    }
+
+    // _________________________________________________________________________________________________________________
+
+    /**
+     * Create a model and persist it in the database if requested.
+     *
+     * @param  array  $attributes
+     * @return \Closure
+     */
+    public function lazy(array $attributes = [])
+    {
+        return function () use ($attributes) {
+            return $this->create($attributes);
+        };
     }
 
     /**
@@ -165,7 +216,7 @@ class FactoryBuilder
     public function make(array $attributes = [])
     {
         return $this
-            ->buildPrototype()
+//            ->buildPrototype()
             ->buildResults([new $this->class, 'newCollection'], function () use ($attributes) {
                 return $this->makeInstance($attributes);
             });
@@ -180,25 +231,25 @@ class FactoryBuilder
     public function raw(array $attributes = [])
     {
         return $this
-            ->buildPrototype()
+//            ->buildPrototype()
             ->buildResults([Arr::class, 'wrap'], function () use ($attributes) {
                 return $this->getRawAttributes($attributes);
             });
     }
-
-    protected function buildPrototype()
-    {
-        $this->lazyFill = [];
-
-        collect($this->states->getDefinition($this->class, $this->name))
-            ->concat($this->states->getStates($this->class, $this->activeStates))
-            ->concat($this->builders)
-            ->each(function ($builder) {
-                call_user_func($builder, $this); //, $this->faker
-            });
-
-        return $this;
-    }
+//
+//    protected function buildPrototype()
+//    {
+//        $this->lazyFill = [];
+//
+//        collect($this->states->getDefinition($this->class, $this->name))
+//            ->concat($this->states->getStates($this->class, $this->activeStates))
+//            ->concat($this->builders)
+//            ->each(function ($builder) {
+//                call_user_func($builder, $this); //, $this->faker
+//            });
+//
+//        return $this;
+//    }
 
     /**
      * @param callable $collect
@@ -249,13 +300,12 @@ class FactoryBuilder
      */
     protected function getRawAttributes(array $attributes = [])
     {
-        $lazyAttributes = collect($this->lazyFill)->reduce(function ($attributes, $fill) {
-            return array_merge($attributes, call_user_func($fill, $this->faker));
-        }, []);
-
-        return $this->expandAttributes(
-            array_merge($this->attributes, $lazyAttributes, $attributes)
-        );
+        return $this->expandAttributes(array_merge(
+            collect($this->attributes)->reduce(function ($attributes, $generate) {
+                return array_merge($attributes, call_user_func($generate, $this->faker));
+            }, []),
+            $attributes
+        ));
     }
 
     /**

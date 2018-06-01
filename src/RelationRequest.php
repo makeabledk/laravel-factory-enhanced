@@ -5,12 +5,13 @@ namespace Makeable\LaravelFactory;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
-    use PrototypesModels;
+//    use PrototypesModels;
 
     /**
      * @var Model
@@ -33,6 +34,25 @@ class RelationRequest
     public $instances;
 
     /**
+     * The number of models to build.
+     *
+     * @var int|null
+     */
+    public $amount;
+
+    /**
+     * The states to apply.
+     *
+     * @var array
+     */
+    public $states = [];
+
+    /**
+     * @var array
+     */
+    public $builder = null;
+
+    /**
      * @param $batch
      * @param $class
      * @param $args
@@ -44,10 +64,10 @@ class RelationRequest
 
         collect($args)->each(function ($arg) {
             if (is_numeric($arg)) {
-                return $this->times($arg);
+                return $this->amount = $arg;
             }
             if ($arg instanceof Closure) {
-                return $this->build($arg);
+                return $this->builder = $arg;
             }
             if ($arg instanceof Model) {
                 return $this->instances = collect([$arg]);
@@ -59,7 +79,7 @@ class RelationRequest
                 return $this->path = $arg;
             }
             if ($this->isValidState($arg)) {
-                return $this->states($arg);
+                return array_push($this->states, $arg);
             }
 
             throw new \BadMethodCallException('Could not recognize argument '. $arg);

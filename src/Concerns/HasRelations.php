@@ -45,15 +45,41 @@ trait HasRelations
             $factory->with($request->createNestedRequest());
         }
         else {
-            $factory->mergePrototype($request->toPrototype());
+            $factory->states($request->states);
+
+            if ($request->amount) {
+                $factory->times($request->amount);
+            }
+
+            if ($request->builder) {
+                call_user_func($request->builder, $factory);
+            }
 
             if ($request->instances !== null) {
+                // TODO add batch
                 $this->instances[$request->getRelationName()] = $request->instances;
             }
         }
 
         return $this;
     }
+//
+//    protected function mergeRequest($request)
+//    {
+//        $args = $request->toArray();
+//
+//        $this->fill($args['attributes']);
+//
+//        if (($states = array_get($args, 'activeStates')) !== null) {
+//            $this->states($states);
+//        }
+//
+//        if (($amount = array_get($args, 'amount')) !== null) {
+//            $this->times($amount);
+//        }
+//
+//        $builders = array_get($args, 'builders', []);
+//    }
 
     /**
      * @param RelationRequest $request

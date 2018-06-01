@@ -89,7 +89,6 @@ trait PrototypesModels
      */
     public function mergePrototype($prototype)
     {
-        $this->build($prototype['builders']);
         $this->fill($prototype['attributes']);
 
         if (($states = array_get($prototype, 'activeStates')) !== null) {
@@ -98,6 +97,17 @@ trait PrototypesModels
 
         if (($amount = array_get($prototype, 'amount')) !== null) {
             $this->times($amount);
+        }
+
+        $builders = array_get($prototype, 'builders', []);
+
+        if (method_exists($this, 'build')) {
+            foreach ($builders as $builder) {
+                $this->build($builder);
+            }
+        }
+        else {
+            $this->builders = array_merge($this->builders, $builders);
         }
 
         return $this;
@@ -128,14 +138,14 @@ trait PrototypesModels
         return $this;
     }
 
-    /**
-     * @param $callable
-     * @return $this
-     */
-    protected function build($callable)
-    {
-        $this->builders = array_merge($this->builders, Arr::wrap($callable));
-
-        return $this;
-    }
+//    /**
+//     * @param $callable
+//     * @return $this
+//     */
+//    protected function build($callable)
+//    {
+//        $this->builders = array_merge($this->builders, Arr::wrap($callable));
+//
+//        return $this;
+//    }
 }

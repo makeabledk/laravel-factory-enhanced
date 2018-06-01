@@ -15,21 +15,29 @@ use Makeable\LaravelFactory\RelationRequest;
 trait BuildsRelationships
 {
     /**
+     * The current batch index.
+     *
      * @var int
      */
-    protected $relationsBatchIndex = 0;
+    protected $currentBatch = 0;
 
     /**
-     * @var null | array
-     */
-    protected $instances;
-
-    /**
+     * Requested relations.
+     *
      * @var array
      */
     protected $relations = [];
 
     /**
+     * Requested instances to apply on relations.
+     *
+     * @var null | array
+     */
+    protected $instances;
+
+    /**
+     * Load a RelationRequest onto current FactoryBuilder.
+     *
      * @param RelationRequest $request
      * @return $this
      */
@@ -38,9 +46,12 @@ trait BuildsRelationships
         $factory = $this->buildFactoryForRequest($request);
 
         if ($request->hasNesting()) {
+            // Recursively create factories until no further nesting
             $factory->with($request->createNestedRequest());
         }
+
         else {
+            // Apply the request onto the newly created factory
             $factory->states($request->states);
 
             if ($request->amount) {
@@ -51,6 +62,7 @@ trait BuildsRelationships
                 call_user_func($request->builder, $factory);
             }
 
+            // Instances are stored on parent factory, not the related itself
             if ($request->instances !== null) {
                 $this->instances[$request->getRelationName()][$request->batch] = $request->instances;
             }
@@ -60,6 +72,8 @@ trait BuildsRelationships
     }
 
     /**
+     * Build a factory for given RelationRequest
+     *
      * @param RelationRequest $request
      * @return FactoryBuilder
      */
@@ -76,6 +90,8 @@ trait BuildsRelationships
     }
 
     /**
+     * Create all requested BelongsTo relations.
+     *
      * @param Model $child
      */
     protected function createBelongsTo($child)
@@ -91,6 +107,8 @@ trait BuildsRelationships
     }
 
     /**
+     * Create all requested BelongsToMany relations.
+     *
      * @param Model $sibling
      */
     protected function createBelongsToMany($sibling)
@@ -106,6 +124,8 @@ trait BuildsRelationships
     }
 
     /**
+     * Create all requested HasMany relations.
+     *
      * @param Model $parent
      */
     protected function createHasMany($parent)
@@ -122,6 +142,8 @@ trait BuildsRelationships
     }
 
     /**
+     * Get closure that checks for a given relation-type.
+     *
      * @param $relationType
      * @return Closure
      */
@@ -133,7 +155,7 @@ trait BuildsRelationships
     }
 
     /**
-     * Check for given related instances or create with factory
+     * Check for given related instances or create with factory.
      *
      * @param string $relation
      * @param int $batch
@@ -146,7 +168,7 @@ trait BuildsRelationships
     }
 
     /**
-     * Top up (or slice) a collection of models to reach specified amount
+     * Top up or slice a collection of models to reach specified amount.
      *
      * @param Collection|Model $models
      * @return Collection
@@ -166,7 +188,7 @@ trait BuildsRelationships
     }
 
     /**
-     * Inherit connection from a parent factory
+     * Inherit connection from a parent factory.
      *
      * @param $factory
      * @return FactoryBuilder
@@ -179,13 +201,13 @@ trait BuildsRelationships
     }
 
     /**
-     * Create a new batch of relations
+     * Create a new batch of relations.
      *
      * @return FactoryBuilder
      */
     protected function newBatch()
     {
-        $this->relationsBatchIndex++;
+        $this->currentBatch++;
 
         return $this;
     }

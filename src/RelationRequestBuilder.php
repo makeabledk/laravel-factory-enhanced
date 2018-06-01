@@ -7,26 +7,34 @@ use Illuminate\Support\Arr;
 class RelationRequestBuilder
 {
     /**
+     * The current batch.
+     *
      * @var int
      */
     protected $batch;
 
     /**
+     * The parent model requesting relations.
+     *
      * @var string
      */
     protected $class;
 
     /**
-     * @param $batch
+     * Create a new request builder.
+     *
      * @param $class
+     * @param $batch
      */
-    public function __construct($batch, $class)
+    public function __construct($class, $batch)
     {
-        $this->batch = $batch;
         $this->class = $class;
+        $this->batch = $batch;
     }
 
     /**
+     * Get a collection of RelationRequests.
+     *
      * @param mixed ...$args
      * @return \Illuminate\Support\Collection
      */
@@ -44,6 +52,8 @@ class RelationRequestBuilder
     }
 
     /**
+     * Check if a RelationRequest was passed.
+     *
      * @param array $args
      * @return bool
      */
@@ -53,6 +63,10 @@ class RelationRequestBuilder
     }
 
     /**
+     * Check if an array with multiple relationships was passed.
+     *
+     * Eg. ['relation_1' => ...$args, 'relations_2' => ...$args]
+     *
      * @param array $args
      * @return bool
      */
@@ -62,6 +76,8 @@ class RelationRequestBuilder
     }
 
     /**
+     * Parse normalized args to RelationRequests.
+     *
      * @param array $relations
      * @return \Illuminate\Support\Collection
      */

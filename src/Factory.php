@@ -24,12 +24,12 @@ class Factory implements ArrayAccess
      * Create a new factory instance.
      *
      * @param  \Faker\Generator $faker
-     * @param StateManager $stateManager
+     * @param StateManager $states
      */
-    public function __construct(Faker $faker, StateManager $stateManager)
+    public function __construct(Faker $faker, StateManager $states)
     {
         $this->faker = $faker;
-        $this->states = $stateManager;
+        $this->states = $states;
     }
 
     /**
@@ -162,10 +162,8 @@ class Factory implements ArrayAccess
      */
     public function raw($class, array $attributes = [], $name = 'default')
     {
-        // TODO
-
         return array_merge(
-            call_user_func($this->definitions[$class][$name], $this->faker), $attributes
+            call_user_func($this->states->getDefinition($class, $name), $this->faker), $attributes
         );
     }
 

@@ -149,7 +149,7 @@ class FactoryBuilder
      */
     public function with(...$args)
     {
-        $builder = new RelationRequestBuilder($this->relationsBatchIndex, $this->class);
+        $builder = new RelationRequestBuilder($this->class, $this->currentBatch);
         $builder->all(...$args)->each(function ($request) {
             $this->loadRelation($request);
         });
@@ -159,8 +159,8 @@ class FactoryBuilder
 
     /**
      * Build with relations in a new batch (not belongs-to).
-     *
-     * This allows to create add multiple sets of the same relation.
+     * Multiple batches can be created on the same relation,
+     * so this is we keep them from overwriting each other.
      *
      * @param mixed ...$args
      * @return FactoryBuilder

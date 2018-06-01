@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
+use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\Division;
 use Makeable\LaravelFactory\Tests\Stubs\Simple;
 use Makeable\LaravelFactory\Tests\Stubs\UserFactory;
@@ -36,7 +37,7 @@ class FactoryTest extends TestCase
     /** @test **/
     function it_creates_models_even_without_prior_definitions()
     {
-        $this->assertInstanceOf(Simple::class, $this->factory(Simple::class)->create());
+        $this->assertInstanceOf(Customer::class, $this->factory(Customer::class)->create());
     }
 
     function syntax()

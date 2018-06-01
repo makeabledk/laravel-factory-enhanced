@@ -14,6 +14,6 @@ class Division extends Model
 
     public function employees()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class, 'employees');
     }
 }

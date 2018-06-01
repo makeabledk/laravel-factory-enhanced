@@ -5,7 +5,9 @@ namespace Makeable\LaravelFactory\Concerns;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Support\Collection;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\RelationRequest;
@@ -50,30 +52,12 @@ trait HasRelations
             }
 
             if ($request->instances !== null) {
-                // TODO add batch
-                $this->instances[$request->getRelationName()] = $request->instances;
+                $this->instances[$request->getRelationName()][$request->batch] = $request->instances;
             }
         }
 
         return $this;
     }
-//
-//    protected function mergeRequest($request)
-//    {
-//        $args = $request->toArray();
-//
-//        $this->fill($args['attributes']);
-//
-//        if (($states = array_get($args, 'activeStates')) !== null) {
-//            $this->states($states);
-//        }
-//
-//        if (($amount = array_get($args, 'amount')) !== null) {
-//            $this->times($amount);
-//        }
-//
-//        $builders = array_get($args, 'builders', []);
-//    }
 
     /**
      * @param RelationRequest $request
@@ -92,31 +76,45 @@ trait HasRelations
     }
 
     /**
-     * @param Model $parent
+     * @param Model $child
      */
-    protected function createBelongsTo(Model $child)
+    protected function createBelongsTo($child)
     {
-//        dd($this->relations);
-
         collect($this->relations)
             ->filter($this->relationTypeIs(BelongsTo::class))
-            ->map($this->fetchFromInstancesOrCreate())
-            ->each(function (Model $parent, $relation) use ($child) {
-                $child->$relation()->associate($parent);
+            ->each(function ($batches, $relation) use ($child) {
+                foreach (array_slice($batches, 0, 1) as $batch => $factory) {
+                    $parent = $this->fetchFromInstancesOrCreate($relation, $batch, $factory->times(1));
+                    $child->$relation()->associate($this->collectModel($parent));
+                }
+            });
+    }
+
+    /**
+     * @param Model $sibling
+     */
+    protected function createBelongsToMany($sibling)
+    {
+        collect($this->relations)
+            ->filter($this->relationTypeIs(BelongsToMany::class))
+            ->each(function ($batches, $relation) use ($sibling) {
+                foreach ($batches as $batch => $factory) {
+                    $models = $this->fetchFromInstancesOrCreate($relation, $batch, $factory);
+                    $sibling->$relation()->saveMany($models);
+                };
             });
     }
 
     /**
      * @param Model $parent
      */
-    protected function createHasMany(Model $parent)
+    protected function createHasMany($parent)
     {
         collect($this->relations)
             ->filter($this->relationTypeIs(HasOneOrMany::class))
-            ->each(function (array $batches, $relation) use ($parent) {
+            ->each(function ($batches, $relation) use ($parent) {
                 foreach ($batches as $factory) {
-                    $factory->create([
-                        // TODO some conneciton stuff?
+                    $factory->inheritConnection($this)->create([
                         $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey()
                     ]);
                 }
@@ -135,18 +133,48 @@ trait HasRelations
     }
 
     /**
-     * Check for given instances or create with factory
+     * Check for given related instances or create with factory
      *
-     * @return Closure
+     * @param string $relation
+     * @param int $batch
+     * @param FactoryBuilder $factory
+     * @return Collection
      */
-    protected function fetchFromInstancesOrCreate()
+    protected function fetchFromInstancesOrCreate($relation, $batch, $factory)
     {
-        return function ($batches, $relation) {
-            return $this->collectModel(
-                array_get($this->instances, $relation, function () use ($batches) {
-                    return array_first($batches)->create();
-                })
-            );
-        };
+        return $factory->topUp(data_get($this->instances, "{$relation}.{$batch}"));
+    }
+
+    /**
+     * Top up (or slice) a collection of models to reach specified amount
+     *
+     * @param Collection|Model $models
+     * @return Collection
+     */
+    protected function topUp($models)
+    {
+        $models = $this->collect($models);
+        $targetItems = $this->amount ?? 1;
+
+        if (($missing = $targetItems - $models->count()) > 0) {
+            $originalAmount = $this->amount;
+            $models = $models->concat($this->times($missing)->create());
+            $this->amount = $originalAmount;
+        }
+
+        return $models->take($targetItems);
+    }
+
+    /**
+     * Inherit connection from a parent factory
+     *
+     * @param $factory
+     * @return FactoryBuilder
+     */
+    protected function inheritConnection($factory)
+    {
+        if ($this->connection === null && (new $this->class)->getConnectionName() === null) {
+            return $this->connection($factory->connection);
+        }
     }
 }

@@ -202,6 +202,7 @@ class FactoryBuilder
             $this->createBelongsTo($model);
             $model->save();
             $this->createHasMany($model);
+            $this->createBelongsToMany($model);
         });
     }
 

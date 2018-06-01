@@ -12,20 +12,27 @@ class CreateTestTables extends Migration
     {
         Schema::create('companies', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('owner_id');
+            $table->unsignedInteger('owner_id')->nullable();
             $table->string('name');
             $table->timestamps();
         });
 
         Schema::create('divisions', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('company_id');
+            $table->unsignedInteger('company_id')->nullable();
             $table->unsignedInteger('manager_id')->nullable();
             $table->string('name');
             $table->timestamps();
         });
 
-        Schema::create('simples', function (Blueprint $table) {
+        Schema::create('employees', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('division_id');
+            $table->unsignedInteger('user_id');
+            $table->timestamps();
+        });
+
+        Schema::create('customers', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
         });

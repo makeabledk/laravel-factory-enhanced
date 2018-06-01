@@ -4,12 +4,9 @@ namespace Makeable\LaravelFactory\Tests\Feature;
 
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Division;
-use Makeable\LaravelFactory\Tests\Stubs\Simple;
-use Makeable\LaravelFactory\Tests\Stubs\UserFactory;
 use Makeable\LaravelFactory\Tests\TestCase;
 
 class RelationsTest extends TestCase
@@ -32,12 +29,24 @@ class RelationsTest extends TestCase
     {
         $company = $this->factory(Company::class)
             ->with(2, 'divisions')
-            ->fill(['owner_id' => $this->factory(User::class)->create()])
             ->create();
 
         $this->assertInstanceOf(Company::class, $company);
         $this->assertInstanceOf(Division::class, $company->divisions->first());
         $this->assertEquals(2, $company->divisions->count());
+    }
+
+    /** @test **/
+    function it_creates_models_with_belongs_to_many_relations()
+    {
+        $division = $this->factory(Division::class)
+            ->with(2, 'employees')
+            ->create();
+
+//        $division->employees()->saveMany($this->factory(User::class)->times(2)->make());
+
+        $this->assertInstanceOf(User::class, $division->employees->first());
+        $this->assertEquals(2, $division->employees->count());
     }
 
     /** @test **/
@@ -157,36 +166,15 @@ class RelationsTest extends TestCase
         $this->assertEquals(2, User::count());
         $this->assertEquals($users->first()->id, $company->owner->id);
     }
-
-    function syntax()
-    {
-        $user = UserFactory::make()
-            ->with(3, 'active', 'companies')
-            ->create();
-
-        Company::make()
-            ->with('owner', $user)
-            ->with(2, 'divisions', collect([$div1, $div2])) // take 2
-            ->with(3, 'divisions.employees')
-            ->create();
-
-        $company = Company::make(['name' => 'Makeable'])
-            ->with('owner')
-            ->with(3, 'divisions', function (Division $factory) {
-                $factory
-                    ->fill(['name' => 'Makeable - '.$factory->faker()->city])
-                    ->state('active')
-                    ->with(3, 'employees');
-            })
-            ->create();
-
-        Division::make()
-            ->with('company', $company) // bind to existing
-            ->create();
-
-        Division::make()
-            ->with('company') // new company
-            ->create();
-    }
-
+//
+//    /** @test **/
+//    function it_accepts_a_collection_of_instances_instead_of_creating_through_factory()
+//    {
+//        $divisions = $this->factory(Division::class)->times(2)->create();
+//        $company = $this->factory(Company::class)
+//            ->with('divisions', $divisions)
+//            ->create();
+//
+//        $this->assertEquals([1,2], $company->divisions->pluck('id'));
+//    }
 }

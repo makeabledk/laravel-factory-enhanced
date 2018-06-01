@@ -13,9 +13,9 @@ trait NormalizesAttributes
     protected function collect($result)
     {
         if ($result instanceof Model) {
-            return collect([$result]);
+            $result = [$result];
         }
-        return $result;
+        return collect($result);
     }
 
     /**
@@ -24,10 +24,7 @@ trait NormalizesAttributes
      */
     protected function collectModel($results)
     {
-        if ($results instanceof Model) {
-            return $results;
-        }
-        return collect($results)->first();
+        return $this->collect($results)->first();
     }
 
     /**

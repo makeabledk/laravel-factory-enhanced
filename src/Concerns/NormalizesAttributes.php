@@ -4,7 +4,7 @@ namespace Makeable\LaravelFactory\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
 
-trait CollectsModels
+trait NormalizesAttributes
 {
     /**
      * @param $result
@@ -28,5 +28,19 @@ trait CollectsModels
             return $results;
         }
         return collect($results)->first();
+    }
+
+    /**
+     * @param $arg
+     * @return Callable
+     */
+    protected function wrapCallable($arg)
+    {
+        if (! is_callable($arg) || is_string($arg)) {
+            return function () use ($arg) {
+                return $arg;
+            };
+        }
+        return $arg;
     }
 }

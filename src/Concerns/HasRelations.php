@@ -9,15 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Support\Collection;
-use Makeable\LaravelFactory\Concerns\CollectsModels;
+use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\RelationRequest;
 
 trait HasRelations
 {
-    use CollectsModels;
-
     /**
      * @var int
      */

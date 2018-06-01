@@ -8,13 +8,14 @@ use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
-use Makeable\LaravelFactory\Concerns\CollectsModels;
+use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 use Makeable\LaravelFactory\Concerns\PrototypesModels;
 use Makeable\LaravelFactory\Concerns\HasRelations;
 
 class FactoryBuilder
 {
     use //PrototypesModels,
+        NormalizesAttributes,
         HasRelations,
         Macroable;
 
@@ -33,6 +34,11 @@ class FactoryBuilder
     protected $faker;
 
     /**
+     * @var string
+     */
+    protected $name;
+
+    /**
      * The model states.
      *
      * @var StateManager
@@ -46,9 +52,16 @@ class FactoryBuilder
      */
     protected $class;
 
-
+    /**
+     * @var int | null
+     */
     protected $amount;
 
+    protected $activeStates = [];
+
+    /**
+     * @var array
+     */
     protected $attributes = [];
 
     /**
@@ -62,12 +75,10 @@ class FactoryBuilder
      */
     public function __construct($class, $name, StateManager $states, Faker $faker)
     {
-//        $this->name = $name;
         $this->class = $class;
+        $this->name = $name;
         $this->faker = $faker;
         $this->states = $states;
-
-        $this->fill($states->getDefinition($this->class, $name));
     }
 
     /**
@@ -89,13 +100,7 @@ class FactoryBuilder
      */
     public function fill($attributes)
     {
-        if (! is_callable($attributes)) {
-            $attributes = function () use ($attributes) {
-                return $attributes;
-            };
-        }
-
-        array_push($this->attributes, $attributes);
+        array_push($this->attributes, $this->wrapCallable($attributes));
 
         return $this;
     }
@@ -108,9 +113,7 @@ class FactoryBuilder
      */
     public function states($states)
     {
-        collect(is_array($states) ? $states : func_get_args())->each(function ($state) {
-            $this->fill($this->states->getState($this->class, $state));
-        });
+        $this->activeStates = is_array($states) ? $states : func_get_args();
 
         return $this;
     }
@@ -152,11 +155,6 @@ class FactoryBuilder
 
         return $this->with(...$args);
     }
-//
-//    protected function applyBuilder($callable)
-//    {
-//        call_user_func($callable, $this);
-//    }
 
     // _________________________________________________________________________________________________________________
 
@@ -215,11 +213,9 @@ class FactoryBuilder
      */
     public function make(array $attributes = [])
     {
-        return $this
-//            ->buildPrototype()
-            ->buildResults([new $this->class, 'newCollection'], function () use ($attributes) {
-                return $this->makeInstance($attributes);
-            });
+        return $this->buildResults([new $this->class, 'newCollection'], function () use ($attributes) {
+            return $this->makeInstance($attributes);
+        });
     }
 
     /**
@@ -230,26 +226,10 @@ class FactoryBuilder
      */
     public function raw(array $attributes = [])
     {
-        return $this
-//            ->buildPrototype()
-            ->buildResults([Arr::class, 'wrap'], function () use ($attributes) {
-                return $this->getRawAttributes($attributes);
-            });
+        return $this->buildResults([Arr::class, 'wrap'], function () use ($attributes) {
+            return $this->getRawAttributes($attributes);
+        });
     }
-//
-//    protected function buildPrototype()
-//    {
-//        $this->lazyFill = [];
-//
-//        collect($this->states->getDefinition($this->class, $this->name))
-//            ->concat($this->states->getStates($this->class, $this->activeStates))
-//            ->concat($this->builders)
-//            ->each(function ($builder) {
-//                call_user_func($builder, $this); //, $this->faker
-//            });
-//
-//        return $this;
-//    }
 
     /**
      * @param callable $collect
@@ -300,12 +280,17 @@ class FactoryBuilder
      */
     protected function getRawAttributes(array $attributes = [])
     {
-        return $this->expandAttributes(array_merge(
-            collect($this->attributes)->reduce(function ($attributes, $generate) {
-                return array_merge($attributes, call_user_func($generate, $this->faker));
-            }, []),
-            $attributes
-        ));
+        return $this->expandAttributes(
+            collect([$this->states->getDefinition($this->class, $this->name)])
+                ->concat($this->attributes)
+                ->concat(collect($this->activeStates)->map(function ($state) {
+                    return $this->states->getState($this->class, $state);
+                }))
+                ->push($this->wrapCallable($attributes))
+                ->reduce(function ($attributes, $generate) {
+                    return array_merge($attributes, call_user_func($generate, $this->faker));
+                }, [])
+        );
     }
 
     /**

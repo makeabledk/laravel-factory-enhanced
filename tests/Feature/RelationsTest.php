@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedMethodInspection */
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
@@ -93,6 +93,18 @@ class RelationsTest extends TestCase
     /** @test **/
     function nested_relations_can_be_customized_by_closures()
     {
+//        factory(Company::class)
+//            ->with('owner')
+//            ->with(3, 'active', 'divisions')
+//            ->with(2, 'happy', 'divisions.customers')
+//            ->with(3, 'divisions.employees', function (FactoryBuilder $employees) {
+//                $employees->fill([
+//                    'password' => bcrypt('foo')
+//                ]);
+//            })
+//            ->create();
+
+
         $company = $this->factory(Company::class)
             ->with('owner')
             ->with([

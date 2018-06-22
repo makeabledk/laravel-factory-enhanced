@@ -8,14 +8,32 @@ use InvalidArgumentException;
 class StateManager
 {
     /**
+     * The model definitions in the container.
+     *
      * @var array
      */
     protected $definitions = [];
 
     /**
+     * The registered model states.
+     *
      * @var array
      */
     protected $states = [];
+
+    /**
+     * The registered after making callbacks.
+     *
+     * @var array
+     */
+    protected $afterMaking = [];
+
+    /**
+     * The registered after creating callbacks.
+     *
+     * @var array
+     */
+    protected $afterCreating = [];
 
     /**
      * @var array
@@ -101,13 +119,59 @@ class StateManager
      */
     public function getState($class, $state)
     {
-        $builder = data_get($this->definitions, "{$class}.{$state}");
+        $builder = data_get($this->definitions, "{$class}.{$state}", function () {});
 
-        if (! $builder) {
-            throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
-        }
+//        if (! $builder) {
+//            throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
+//        }
 
         return $builder;
+    }
+
+    /**
+     * @param $class
+     * @param $name
+     * @param callable $callback
+     * @return $this
+     */
+    public function afterMaking($class, $name, callable $callback)
+    {
+        $this->afterMaking[$class][$name][] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * @param $class
+     * @param $state
+     * @return array
+     */
+    public function getAfterMakingCallbacks($class, $state)
+    {
+        return data_get($this->afterMaking, "{$class}.{$state}", []);
+    }
+
+    /**
+     * @param $class
+     * @param $name
+     * @param callable $callback
+     * @return $this
+     */
+    public function afterCreating($class, $name, callable $callback)
+    {
+        $this->afterCreating[$class][$name][] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * @param $class
+     * @param $state
+     * @return array
+     */
+    public function getAfterCreatingCallbacks($class, $state)
+    {
+        return data_get($this->afterCreating, "{$class}.{$state}", []);
     }
 
     /**

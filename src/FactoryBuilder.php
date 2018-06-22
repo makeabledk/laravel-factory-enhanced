@@ -215,6 +215,8 @@ class FactoryBuilder
             $model->save();
             $this->createHasMany($model);
             $this->createBelongsToMany($model);
+
+            $this->callAfter('creating', $model);
         });
     }
 
@@ -283,7 +285,9 @@ class FactoryBuilder
                 $instance->setConnection($this->connection);
             }
 
-            return $instance;
+            return tap($instance, function ($instance) {
+                $this->callAfter('making', $instance);
+            });
         });
     }
 
@@ -331,5 +335,38 @@ class FactoryBuilder
         }
 
         return $attributes;
+    }
+
+    /**
+     * Call after callbacks for each model and state.
+     *
+     * @param  string  $action
+     * @param  Model  $model
+     * @return void
+     */
+    protected function callAfter($action, $model)
+    {
+        $states = array_merge([$this->name], $this->activeStates);
+
+        foreach ($states as $state) {
+            $this->callAfterCallbacks($action, $model, $state);
+        }
+    }
+
+    /**
+     * Call after callbacks for each model and state.
+     *
+     * @param  string  $action
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $state
+     * @return void
+     */
+    protected function callAfterCallbacks($action, $model, $state)
+    {
+        $callbacks = call_user_func([$this->states, camel_case('get_after_'.$action.'_callbacks')], $this->class, $state);
+
+        foreach ($callbacks as $callback) {
+            $callback($model, $this->faker);
+        }
     }
 }

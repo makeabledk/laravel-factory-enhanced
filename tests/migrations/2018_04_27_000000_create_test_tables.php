@@ -17,10 +17,18 @@ class CreateTestTables extends Migration
             $table->timestamps();
         });
 
+        Schema::create('customers', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('company_id')->nullable();
+            $table->integer('satisfaction')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('divisions', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('company_id')->nullable();
             $table->unsignedInteger('manager_id')->nullable();
+            $table->tinyInteger('active')->default(0);
             $table->string('name');
             $table->timestamps();
         });
@@ -29,11 +37,6 @@ class CreateTestTables extends Migration
             $table->increments('id');
             $table->unsignedInteger('division_id');
             $table->unsignedInteger('user_id');
-            $table->timestamps();
-        });
-
-        Schema::create('customers', function (Blueprint $table) {
-            $table->increments('id');
             $table->timestamps();
         });
     }

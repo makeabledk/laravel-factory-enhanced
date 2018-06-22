@@ -3,8 +3,10 @@
 namespace Makeable\LaravelFactory;
 
 use Closure;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class RelationRequest
@@ -64,12 +66,17 @@ class RelationRequest
      * @param $class
      * @param $batch
      * @param $args
+     * @throws Exception
      */
     public function __construct($class, $batch, $args)
     {
         list ($this->batch, $this->model) = [$batch, new $class];
 
         $this->parseArgs($args);
+
+        if (! $this->path) {
+            throw new Exception('No matching relation was found on class '.get_class($this->model));
+        }
     }
 
     /**
@@ -112,7 +119,14 @@ class RelationRequest
      */
     public function createNestedRequest()
     {
-        return new static($this->getRelatedClass(), $this->batch, $this->getNestedPath());
+        $request = new static($this->getRelatedClass(), $this->batch, $this->getNestedPath());
+        $request->amount = $this->amount;
+        $request->builder = $this->builder;
+        $request->instances = $this->instances;
+        $request->states = $this->states;
+
+        return $request;
+
     }
 
     /**

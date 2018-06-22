@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
@@ -93,18 +93,6 @@ class RelationsTest extends TestCase
     /** @test **/
     function nested_relations_can_be_customized_by_closures()
     {
-//        factory(Company::class)
-//            ->with('owner')
-//            ->with(3, 'active', 'divisions')
-//            ->with(2, 'happy', 'divisions.customers')
-//            ->with(3, 'divisions.employees', function (FactoryBuilder $employees) {
-//                $employees->fill([
-//                    'password' => bcrypt('foo')
-//                ]);
-//            })
-//            ->create();
-
-
         $company = $this->factory(Company::class)
             ->with('owner')
             ->with([
@@ -204,5 +192,22 @@ class RelationsTest extends TestCase
             ->create();
 
         $this->assertEquals([4,5], $division2->employees->pluck('id')->toArray());
+    }
+
+    /** @test **/
+    public function states_can_be_specified_for_nested_relations()
+    {
+        $company = $this->factory(Company::class)
+            ->with('owner')
+            ->with(2, 'happy', 'customers')
+            ->with(3, 'active', 'divisions')
+            ->with(3, 'divisions.employees')
+            ->create();
+
+        $this->assertEquals(3, $company->divisions->count());
+        $this->assertEquals(2, $company->customers->count());
+        $this->assertEquals(3, $company->divisions->first()->employees->count());
+        $this->assertEquals(1, $company->divisions->first()->active);
+        $this->assertEquals(5, $company->customers->first()->satisfaction);
     }
 }

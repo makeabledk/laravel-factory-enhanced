@@ -4,9 +4,12 @@ namespace Makeable\LaravelFactory;
 
 use Closure;
 use InvalidArgumentException;
+use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 
 class StateManager
 {
+    use NormalizesAttributes;
+
     /**
      * The model definitions in the container.
      *
@@ -50,7 +53,7 @@ class StateManager
      */
     public function define($class, $name, $builder)
     {
-        $this->definitions[$class][$name] = $this->makeCallable($builder);
+        $this->definitions[$class][$name] = $this->wrapCallable($builder);
 
         return $this;
     }
@@ -82,7 +85,7 @@ class StateManager
      */
     public function getDefinition($class, $name)
     {
-        return data_get($this->definitions, "{$class}.{$name}") ?: $this->makeCallable([]);
+        return data_get($this->definitions, "{$class}.{$name}") ?: $this->wrapCallable([]);
     }
 
     /**
@@ -95,7 +98,7 @@ class StateManager
      */
     public function state($class, $state, $builder)
     {
-        $this->states[$class][$state] = $this->makeCallable($builder);
+        $this->states[$class][$state] = $this->wrapCallable($builder);
 
         return $this;
     }
@@ -119,7 +122,7 @@ class StateManager
      */
     public function getState($class, $state)
     {
-        $builder = data_get($this->definitions, "{$class}.{$state}", function () {});
+        $builder = data_get($this->states, "{$class}.{$state}") ?: $this->wrapCallable([]);
 
 //        if (! $builder) {
 //            throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
@@ -184,20 +187,20 @@ class StateManager
 
         return $this;
     }
-
-    /**
-     * @param $builder
-     * @return Closure
-     */
-    protected function makeCallable($builder)
-    {
-        if (! is_callable($builder)) {
-            $builder = function () use ($builder) {
-                return $builder;
-            };
-        }
-        return $builder;
-    }
+//
+//    /**
+//     * @param $builder
+//     * @return Closure
+//     */
+//    protected function makeCallable($builder)
+//    {
+//        if (! is_callable($builder)) {
+//            $builder = function () use ($builder) {
+//                return $builder;
+//            };
+//        }
+//        return $builder;
+//    }
 
 //
 //    /**

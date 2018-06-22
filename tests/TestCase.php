@@ -10,6 +10,7 @@ use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\FactoryServiceProvider;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
+use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\Division;
 
 class TestCase extends BaseTestCase
@@ -37,11 +38,20 @@ class TestCase extends BaseTestCase
                 'name' => $faker->company
             ];
         });
+
+        $this->factory()->state(Customer::class, 'happy', function (Generator $faker) {
+            return [
+                'satisfaction' => 5
+            ];
+        });
+
         $this->factory()->define(Division::class, function (Generator $faker) {
             return [
                 'name' => $faker->company
             ];
         });
+
+        $this->factory()->state(Division::class, 'active', ['active' => 1]);
 
         // Make tests faster!
         Hash::setRounds(4);

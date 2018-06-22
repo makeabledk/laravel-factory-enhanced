@@ -1,23 +1,18 @@
 
 # Laravel Factory
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/makeabledk/laravel-factory.svg?style=flat-square)](https://packagist.org/packages/makeabledk/laravel-factory)
 [![Build Status](https://img.shields.io/travis/makeabledk/laravel-factory/master.svg?style=flat-square)](https://travis-ci.org/makeabledk/laravel-factory)
 [![StyleCI](https://styleci.io/repos/117680722/shield?branch=master)](https://styleci.io/repos/117680722)
 
 
 **IMPORTANT NOTICE** 
 
-This is a package used internally by makeabledk and may not follow SemVer. Use it at your own risk.
+This package is work in progress and not yet ready for installation.
 
 
 ## Install
 
-You can install this package via composer:
-
-``` bash
-composer require makeabledk/laravel-factory
-```
+Not ready yet.
 
 ## Change log
 

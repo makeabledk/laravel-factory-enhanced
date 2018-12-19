@@ -6,6 +6,7 @@ namespace Makeable\LaravelFactory;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Macroable;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
@@ -73,6 +74,13 @@ class FactoryBuilder
     protected $attributes = [];
 
     /**
+     * Attributes to apply to a pivot relation.
+     *
+     * @var array
+     */
+    protected $pivotAttributes = [];
+
+    /**
      * Create an new builder instance.
      *
      * @param  string  $class
@@ -111,6 +119,19 @@ class FactoryBuilder
     public function fill($attributes)
     {
         array_push($this->attributes, $this->wrapCallable($attributes));
+
+        return $this;
+    }
+
+    /**
+     * Fill attributes on the pivot model.
+     *
+     * @param array|callable $attributes
+     * @return $this
+     */
+    public function fillPivot($attributes)
+    {
+        array_push($this->pivotAttributes, $this->wrapCallable($attributes));
 
         return $this;
     }
@@ -158,9 +179,9 @@ class FactoryBuilder
     }
 
     /**
-     * Build with relations in a new batch (not belongs-to).
-     * Multiple batches can be created on the same relation,
-     * so this is we keep them from overwriting each other.
+     * Build relations in a new batch (not belongs-to). Multiple
+     * batches can be created on the same relation, and so this
+     * way we may keep them from overwriting each other.
      *
      * @param mixed ...$args
      * @return FactoryBuilder
@@ -299,16 +320,30 @@ class FactoryBuilder
      */
     protected function getRawAttributes(array $attributes = [])
     {
+        return collect($this->states->getDefinition($this->class, $this->name))
+            ->concat($this->attributes)
+            ->concat(collect($this->activeStates)->map(function ($state) {
+                return $this->states->getState($this->class, $state);
+            }))
+            ->push($this->wrapCallable($attributes))
+            ->pipe(function ($attributes) {
+                return $this->mergeAndExpandAttributes($attributes);
+            });
+    }
+
+    /**
+     * Run attribute closures, merge resulting attributes
+     * and finally expand to their underlying values
+     *
+     * @param Collection|array $attributes
+     * @return array
+     */
+    protected function mergeAndExpandAttributes($attributes)
+    {
         return $this->expandAttributes(
-            collect($this->states->getDefinition($this->class, $this->name))
-                ->concat($this->attributes)
-                ->concat(collect($this->activeStates)->map(function ($state) {
-                    return $this->states->getState($this->class, $state);
-                }))
-                ->push($this->wrapCallable($attributes))
-                ->reduce(function ($attributes, $generate) {
-                    return array_merge($attributes, call_user_func($generate, $this->faker));
-                }, [])
+            collect($attributes)->reduce(function ($attributes, $generate) {
+                return array_merge($attributes, call_user_func($generate, $this->faker));
+            }, [])
         );
     }
 

@@ -37,6 +37,7 @@ class CreateTestTables extends Migration
             $table->increments('id');
             $table->unsignedInteger('division_id');
             $table->unsignedInteger('user_id');
+            $table->timestamp('started_at')->nullable();
             $table->timestamps();
         });
     }

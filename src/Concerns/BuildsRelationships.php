@@ -117,8 +117,10 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsToMany::class))
             ->each(function ($batches, $relation) use ($sibling) {
                 foreach ($batches as $batch => $factory) {
-                    $models = $this->fetchFromInstancesOrCreate($relation, $batch, $factory);
-                    $sibling->$relation()->saveMany($models);
+                    collect($this->fetchFromInstancesOrCreate($relation, $batch, $factory))
+                        ->each(function ($model) use ($sibling, $relation, $factory) {
+                            $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
+                        });
                 };
             });
     }

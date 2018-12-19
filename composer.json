@@ -1,5 +1,5 @@
 {
-    "name": "makeabledk/laravel-factory",
+    "name": "makeabledk/laravel-factory-enhanced",
     "license": "CC-BY-SA-4.0",
     "autoload": {
         "psr-4": {

@@ -21,6 +21,13 @@
             "Makeable\\LaravelFactory\\Tests\\": "tests/"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Makeable\\LaravelFactory\\FactoryServiceProvider"
+            ]
+        }
+    },
     "scripts": {
         "test": "./vendor/bin/phpunit",
         "style": "./vendor/bin/php-cs-fixer fix ./src --rules=@PSR2,@Symfony,ordered_class_elements,ordered_imports --verbose"

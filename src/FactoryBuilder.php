@@ -163,6 +163,25 @@ class FactoryBuilder
     }
 
     /**
+     * Apply the callback if the value is truthy.
+     *
+     * @param bool $value
+     * @param callable $callback
+     * @param callable|null $default
+     * @return $this
+     */
+    public function when($value, $callback, $default = null)
+    {
+        if ($value) {
+            call_user_func($callback, $this, $value);
+        } elseif ($default) {
+            call_user_func($default, $this, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * Build the model with specified relations.
      *
      * @param mixed ...$args

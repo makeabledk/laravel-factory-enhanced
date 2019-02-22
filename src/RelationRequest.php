@@ -33,13 +33,6 @@ class RelationRequest
     public $path;
 
     /**
-     * The bound instances.
-     *
-     * @var Collection
-     */
-    public $instances;
-
-    /**
      * The number of related models to build.
      *
      * @var int|null
@@ -95,14 +88,6 @@ class RelationRequest
                 return $this->builder = $arg;
             }
 
-            if ($arg instanceof Model) {
-                return $this->instances = collect([$arg]);
-            }
-
-            if ($arg instanceof Collection) {
-                return $this->instances = $arg;
-            }
-
             if ($this->isValidRelation($arg)) {
                 return $this->path = $arg;
             }
@@ -122,7 +107,6 @@ class RelationRequest
         $request = new static($this->getRelatedClass(), $this->batch, $this->getNestedPath());
         $request->amount = $this->amount;
         $request->builder = $this->builder;
-        $request->instances = $this->instances;
         $request->states = $this->states;
 
         return $request;

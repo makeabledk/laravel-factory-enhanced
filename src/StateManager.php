@@ -124,9 +124,9 @@ class StateManager
     {
         $builder = data_get($this->states, "{$class}.{$state}") ?: $this->wrapCallable([]);
 
-//        if (! $builder) {
-//            throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
-//        }
+        if (! $builder) {
+            throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
+        }
 
         return $builder;
     }

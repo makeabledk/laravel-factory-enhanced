@@ -29,13 +29,6 @@ trait BuildsRelationships
     protected $relations = [];
 
     /**
-     * Requested instances to apply on relations.
-     *
-     * @var null | array
-     */
-    protected $instances;
-
-    /**
      * Load a RelationRequest onto current FactoryBuilder.
      *
      * @param RelationRequest $request
@@ -60,11 +53,6 @@ trait BuildsRelationships
 
             if ($request->builder) {
                 call_user_func($request->builder, $factory);
-            }
-
-            // Instances are stored on parent factory, not the related itself
-            if ($request->instances !== null) {
-                $this->instances[$request->getRelationName()][$request->batch] = $request->instances;
             }
         }
 
@@ -100,8 +88,8 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsTo::class))
             ->each(function ($batches, $relation) use ($child) {
                 foreach (array_slice($batches, 0, 1) as $batch => $factory) {
-                    $parent = $this->fetchFromInstancesOrCreate($relation, $batch, $factory->times(1));
-                    $child->$relation()->associate($this->collectModel($parent));
+                    $parent = $this->collectModel($factory->create());
+                    $child->$relation()->associate($parent);
                 }
             });
     }
@@ -117,10 +105,10 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsToMany::class))
             ->each(function ($batches, $relation) use ($sibling) {
                 foreach ($batches as $batch => $factory) {
-                    collect($this->fetchFromInstancesOrCreate($relation, $batch, $factory))
-                        ->each(function ($model) use ($sibling, $relation, $factory) {
-                            $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
-                        });
+                    $models = $this->collect($factory->create());
+                    $models->each(function ($model) use ($sibling, $relation, $factory) {
+                        $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
+                    });
                 };
             });
     }
@@ -154,39 +142,6 @@ trait BuildsRelationships
         return function ($batches, $relation) use ($relationType) {
             return (new $this->class)->$relation() instanceof $relationType;
         };
-    }
-
-    /**
-     * Check for given related instances or create with factory.
-     *
-     * @param string $relation
-     * @param int $batch
-     * @param FactoryBuilder $factory
-     * @return Collection
-     */
-    protected function fetchFromInstancesOrCreate($relation, $batch, $factory)
-    {
-        return $factory->topUp(data_get($this->instances, "{$relation}.{$batch}"));
-    }
-
-    /**
-     * Top up or slice a collection of models to reach specified amount.
-     *
-     * @param Collection|Model $models
-     * @return Collection
-     */
-    protected function topUp($models)
-    {
-        $models = $this->collect($models);
-        $targetItems = $this->amount ?? max(1, $models->count());
-
-        if (($missing = $targetItems - $models->count()) > 0) {
-            $originalAmount = $this->amount;
-            $models = $models->concat($this->times($missing)->create());
-            $this->amount = $originalAmount;
-        }
-
-        return $models->take($targetItems);
     }
 
     /**

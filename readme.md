@@ -92,9 +92,9 @@ factory(Team::class)
     ->with(3, 'servers.sites')
     ->create();
 ```
-However please note that the count '3' applies to *the final relationship*, in this case `sites`.
+Please note that the count '3' applies to *the final relationship*, in this case `sites`.
 
-If you wanted 2 servers each of which has 3 sites, you may write it as following:
+If you are wanting 2 servers each of which has 3 sites, you may write it as following:
 
 ```php
 factory(Team::class)    
@@ -113,6 +113,32 @@ factory(Team::class)
     ->create();
 ```
 
+You may finding yourself wanting a relationship in multiple states. In this case you may use the `andWith()` method.
+
+```php
+factory(Team::class)    
+    ->with(2, 'online', 'servers')
+    ->andWith(1, 'offline', 'servers')
+    ->create();
+```
+
+By using the `andWith` we will create a 'clean cut', and no further calls to `with` can interfere with relations specified prior to the `andWith`. 
+
+In the above example any further nesting of relations will apply to the 'offline' server.
+
+```php
+factory(Team::class)    
+    ->with(2, 'online', 'servers')
+    ->andWith(1, 'offline', 'servers')
+    ->with(3, 'sites')
+    ->create();
+```
+
+The above example will create 1x team that has
+
+- 2x online servers
+- 1x offline servers with 3 sites
+
 ### Using closures for customization
 
 In addition to passing *count* and *state* directly into the `with` function, you may also pass a closure that will receive the `FactoryBuilder` instance directly.
@@ -127,10 +153,10 @@ factory(Team::class)
     ->create();
 ```
 
-You may even nest further relationships in the builder should you wish to.
+You may also nest further relationships in the builder should you wish to.
 
 One advantage by using closures, is that it will be evaluated each time the factory-model (in this case a `server`) is created.
-You may use this to you advantage if you'd like some random relations in your `DevelopmentSeeder`.
+This is especially handy if you'd like some random relations in your `DevelopmentSeeder`.
 
 ```php
 factory(Team::class)    
@@ -146,7 +172,9 @@ factory(Team::class)
 
 ### Creating random translations
 
-For seeding a entire development environment it can be really useful with some random relations.
+For seeding an entire development environment it can be useful with random relations. 
+
+Consider the following example from a real-life project:
 
 ```php
 $courses = Collection::times(5)->map(function () {
@@ -155,23 +183,56 @@ $courses = Collection::times(5)->map(function () {
         ->with(random_int(1, 5), 'chapters.videos')
         ->when(random_int(0, 2), function ($course) { // 66% of courses will be translated  
             $course
-                ->with(1, 'english', 'translations')
+                ->with(1, 'danish', 'translations')
                 ->with(random_int(1, 5), 'translations.chapters')
-                ->with(random_int(1, 5), 'english', 'translations.chapters.videos')
+                ->with(random_int(1, 5), 'danish', 'translations.chapters.videos')
         })
     });
 });
 ```
 
+With a few lines of code we have seeded several models in several random states. Pretty neat!
+
+### Factoring models with no definitions
+
+Traditionally trying use to `factory()` on a model with no defined model-factory would throw an exception. Not anymore!
+
+After installing this package, you are completely free to use `factory()` on any Eloquent model, whether or not you have defined a model factory.
+
+If need be, you may pass attributes inline through the `with` method or use the `fill` helper.
+
+**Passing attributes inline**
+
+```php
+factory(Server::class)->with(1, 'sites', ['name' => 'example.org'])->create();
+```
+
+**Using the `fill` method**
+
+```php
+factory(Server::class)->with(1, 'sites', function (FactoryBuilder $sites) {
+    $sites->fill(function (Faker $faker) { 
+        return [
+            'name' => $faker->name,
+        ];
+    });
+})->create();
+```
 
 ## Available methods
+
+These are the provided methods on the `FactoryBuilder` instance in addition to the core methods.
 
 - fill
 - when
 - with
 - andWith
 
-(more docs to come)
+## Word of caution
+
+This package swaps the native factory implementation with it's own implementation. 
+
+While the public API is aimed to be 100% compatible with the native one, some differences may occur. In that case we're happy to hear from you.
 
 ## Change log
 

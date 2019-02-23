@@ -77,4 +77,14 @@ class SimpleRelationsTest extends TestCase
         $this->assertEquals(1, $company->divisions->first()->active);
         $this->assertEquals(5, $company->customers->first()->satisfaction);
     }
+
+    /** @test **/
+    public function additional_attributes_can_be_passed_in_with_method()
+    {
+        $company = $this->factory(Company::class)
+            ->with('owner', ['password' => 'foobar'])
+            ->create();
+
+        $this->assertEquals('foobar', $company->owner->password);
+    }
 }

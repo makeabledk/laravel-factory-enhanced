@@ -54,6 +54,13 @@ class RelationRequest
     public $builder = null;
 
     /**
+     * Attributes to apply.
+     *
+     * @var array
+     */
+    public $attributes = [];
+
+    /**
      * Create a new relationship request.
      *
      * @param $class
@@ -82,6 +89,10 @@ class RelationRequest
         collect($args)->each(function ($arg) {
             if (is_numeric($arg)) {
                 return $this->amount = $arg;
+            }
+
+            if (is_array($arg) && ! isset($arg[0])) {
+                return $this->attributes = $arg;
             }
 
             if (is_callable($arg) && ! is_string($arg)) {

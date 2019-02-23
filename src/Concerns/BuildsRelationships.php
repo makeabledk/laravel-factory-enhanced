@@ -45,7 +45,9 @@ trait BuildsRelationships
 
         else {
             // Apply the request onto the newly created factory
-            $factory->states($request->states);
+            $factory
+                ->fill($request->attributes)
+                ->states($request->states);
 
             if ($request->amount) {
                 $factory->times($request->amount);

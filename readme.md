@@ -1,7 +1,7 @@
 
 # Laravel Factory Enhanced 🔥
 
-[![Build Status](https://img.shields.io/travis/makeabledk/laravel-factory/master.svg?style=flat-square)](https://travis-ci.org/makeabledk/laravel-factory)
+[![Build Status](https://img.shields.io/travis/makeabledk/laravel-factory-enhanced/master.svg?style=flat-square)](https://travis-ci.org/makeabledk/laravel-factory)
 [![StyleCI](https://styleci.io/repos/117680722/shield?branch=master)](https://styleci.io/repos/117680722)
 
 Bring the magic of eloquent relationships into the Laravel Factory. 

@@ -38,13 +38,13 @@ trait BuildsRelationships
     {
         $factory = $this->buildFactoryForRequest($request);
 
+        // Recursively create factories until no further nesting
         if ($request->hasNesting()) {
-            // Recursively create factories until no further nesting
             $factory->with($request->createNestedRequest());
         }
 
+        // Apply the request onto the newly created factory
         else {
-            // Apply the request onto the newly created factory
             $factory
                 ->fill($request->attributes)
                 ->states($request->states);

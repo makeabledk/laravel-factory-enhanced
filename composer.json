@@ -7,14 +7,18 @@
         }
     },
     "require": {
-        "php": ">=7.1.0"
+        "php": ">=7.1.0",
+        "illuminate/database": "^5.5",
+        "illuminate/support": "^5.5"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.3",
-        "laravel/laravel": "5.5",
+        "codedungeon/phpunit-result-printer": "^0.26.0",
         "doctrine/dbal": "^2.5",
-        "orchestra/testbench": "~3.5",
-        "nunomaduro/collision": "^1.1"
+        "laravel/laravel": "5.5.*",
+        "mockery/mockery": "^1.1",
+        "nunomaduro/collision": "^1.1",
+        "orchestra/testbench": "^3.5",
+        "phpunit/phpunit": "^6.0|^7.0"
     },
     "autoload-dev": {
         "psr-4": {
@@ -28,8 +32,10 @@
             ]
         }
     },
+    "config": {
+        "sort-packages": true
+    },
     "scripts": {
-        "test": "./vendor/bin/phpunit",
-        "style": "./vendor/bin/php-cs-fixer fix ./src --rules=@PSR2,@Symfony,ordered_class_elements,ordered_imports --verbose"
+        "test": "./vendor/bin/phpunit"
     }
 }

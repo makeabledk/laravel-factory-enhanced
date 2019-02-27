@@ -7,6 +7,7 @@ use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
@@ -134,6 +135,17 @@ class FactoryBuilder
         array_push($this->pivotAttributes, $this->wrapCallable($attributes));
 
         return $this;
+    }
+
+    /**
+     * Set the state to be applied to the model.
+     *
+     * @param  string  $state
+     * @return $this
+     */
+    public function state($state)
+    {
+        return $this->states([$state]);
     }
 
     /**
@@ -417,7 +429,7 @@ class FactoryBuilder
      */
     protected function callAfterCallbacks($action, $model, $state)
     {
-        $callbacks = call_user_func([$this->states, camel_case('get_after_'.$action.'_callbacks')], $this->class, $state);
+        $callbacks = call_user_func([$this->states, Str::camel('get_after_'.$action.'_callbacks')], $this->class, $state);
 
         foreach ($callbacks as $callback) {
             $callback($model, $this->faker);

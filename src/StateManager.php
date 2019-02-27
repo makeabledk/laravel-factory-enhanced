@@ -187,34 +187,4 @@ class StateManager
 
         return $this;
     }
-//
-//    /**
-//     * @param $builder
-//     * @return Closure
-//     */
-//    protected function makeCallable($builder)
-//    {
-//        if (! is_callable($builder)) {
-//            $builder = function () use ($builder) {
-//                return $builder;
-//            };
-//        }
-//        return $builder;
-//    }
-
-//
-//    /**
-//     * @param $class
-//     * @param $state
-//     * @return Closure | null
-//     */
-//    public function get($class, $state)
-//    {
-//        foreach ($this->providers as $provider) {
-//            if ($fn = $provider->get($class, $state)) {
-//                return $fn;
-//            }
-//        }
-//        return null;
-//    }
 }

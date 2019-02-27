@@ -22,10 +22,6 @@ class TestCase extends BaseTestCase
      */
     public function createApplication()
     {
-        putenv('APP_ENV=testing');
-        putenv('DB_CONNECTION=sqlite');
-        putenv('DB_DATABASE=:memory:');
-
         $app = require __DIR__.'/../vendor/laravel/laravel/bootstrap/app.php';
         $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
         $app->register(FactoryServiceProvider::class);

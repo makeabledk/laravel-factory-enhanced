@@ -123,7 +123,7 @@ factory(Team::class)
     ->create();
 ```
 
-By using the `andWith` we will create a 'clean cut', and no further calls to `with` can interfere with relations specified prior to the `andWith`. 
+By using the `andWith` we will create a 'clean cut', so that no further calls to `with` can interfere with relations specified prior to the `andWith`. 
 
 In the above example any further nesting of relations will apply to the 'offline' server.
 
@@ -131,7 +131,7 @@ In the above example any further nesting of relations will apply to the 'offline
 factory(Team::class)    
     ->with(2, 'online', 'servers')
     ->andWith(1, 'offline', 'servers')
-    ->with(3, 'sites')
+    ->with(3, 'servers.sites')
     ->create();
 ```
 
@@ -196,7 +196,7 @@ With a few lines of code we have seeded several models in several random states.
 
 ### Factoring models with no definitions
 
-Traditionally trying use to `factory()` on a model with no defined model-factory would throw an exception. Not anymore!
+Traditionally trying to use `factory()` on a model with no defined model-factory would throw an exception. Not anymore!
 
 After installing this package, you are completely free to use `factory()` on any Eloquent model, whether or not you have defined a model factory.
 
@@ -225,6 +225,7 @@ factory(Server::class)->with(1, 'sites', function (FactoryBuilder $sites) {
 These are the provided methods on the `FactoryBuilder` instance in addition to the core methods.
 
 - fill
+->fillPivot (only applicable on BelongsToMany
 - when
 - with
 - andWith

@@ -39,4 +39,16 @@ class FactoryTest extends TestCase
             $this->factory(User::class)->when(true, $createTwice)->create()
         );
     }
+
+    /** @test **/
+    function a_builder_can_be_tapped()
+    {
+        $createTwice = function ($builder) {
+            $builder->times(2);
+        };
+
+        $this->assertInstanceOf(Collection::class,
+            $this->factory(User::class)->tap($createTwice)->create()
+        );
+    }
 }

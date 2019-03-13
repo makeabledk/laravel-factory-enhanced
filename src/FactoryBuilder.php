@@ -162,6 +162,19 @@ class FactoryBuilder
     }
 
     /**
+     * Pass the builder to the given callback and then return it.
+     *
+     * @param callable $callback
+     * @return $this
+     */
+    public function tap($callback)
+    {
+        call_user_func($callback, $this);
+
+        return $this;
+    }
+
+    /**
      * Set the amount of models you wish to create / make.
      *
      * @param  int  $amount

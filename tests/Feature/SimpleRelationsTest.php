@@ -78,6 +78,7 @@ class SimpleRelationsTest extends TestCase
         $this->assertEquals(5, $company->customers->first()->satisfaction);
     }
 
+
     /** @test **/
     public function additional_attributes_can_be_passed_in_with_method()
     {
@@ -86,5 +87,22 @@ class SimpleRelationsTest extends TestCase
             ->create();
 
         $this->assertEquals('foobar', $company->owner->password);
+    }
+
+    /** @test **/
+    public function it_throws_a_bad_method_call_on_missing_relations()
+    {
+        $this->expectException(\BadMethodCallException::class);
+        $this->factory(Company::class)->with(1, 'invalidRelation')->create();
+    }
+
+    /** @test **/
+    public function regression_null_arguments_will_parse_as_state_and_then_ignored()
+    {
+        $company = $this->factory(Company::class)
+            ->with(1, 'divisions', null)
+            ->create();
+
+        $this->assertEquals(1, $company->divisions->count());
     }
 }

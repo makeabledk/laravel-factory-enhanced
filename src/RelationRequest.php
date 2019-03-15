@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory;
 
+use BadMethodCallException;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -75,7 +76,12 @@ class RelationRequest
         $this->parseArgs($args);
 
         if (! $this->path) {
-            throw new Exception('No matching relation was found on class '.get_class($this->model));
+            throw new BadMethodCallException(
+                'Relation not found. Failed to locate any of the following strings as defined relations on model "'.get_class($this->model).'": '.
+                ((count($this->states) > 0)
+                    ? str_replace('""', 'NULL', '"'.implode('", "', $this->states).'"')
+                    : '- NO POSSIBLY RELATION NAMES GIVEN -')
+            );
         }
     }
 
@@ -184,6 +190,6 @@ class RelationRequest
     {
         $relation = $this->getRelationName($path);
 
-        return method_exists($this->model, $relation) && $this->model->$relation() instanceof Relation;
+        return $path !== null && method_exists($this->model, $relation) && $this->model->$relation() instanceof Relation;
     }
 }

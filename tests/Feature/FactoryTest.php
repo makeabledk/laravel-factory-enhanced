@@ -3,6 +3,7 @@
 namespace Makeable\LaravelFactory\Tests\Feature;
 
 use App\User;
+use Faker\Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
@@ -50,5 +51,23 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(Collection::class,
             $this->factory(User::class)->tap($createTwice)->create()
         );
+    }
+
+    /** @test **/
+    public function regression_it_passes_inline_attributes_to_definitions()
+    {
+        $factory = $this->factory();
+        $factory->defineAs(Customer::class, 'special', function (Generator $faker, array $attributes) {
+            $this->assertEquals('bar', $attributes['foo']);
+            return [];
+        });
+
+        $this->assertEquals('bar', $factory
+            ->of(Customer::class, 'special')
+            ->make(['foo' => 'bar'])
+            ->foo
+        );
+
+        unset($factory[Customer::class]['special']);
     }
 }

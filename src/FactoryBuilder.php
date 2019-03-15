@@ -370,8 +370,8 @@ class FactoryBuilder
                 return $this->states->getState($this->class, $state);
             }))
             ->push($this->wrapCallable($attributes))
-            ->pipe(function ($attributes) {
-                return $this->mergeAndExpandAttributes($attributes);
+            ->pipe(function ($callables) use ($attributes) {
+                return $this->mergeAndExpandAttributes($callables, $attributes);
             });
     }
 
@@ -380,13 +380,14 @@ class FactoryBuilder
      * and finally expand to their underlying values
      *
      * @param Collection|array $attributes
+     * @param array $inlineAttributes
      * @return array
      */
-    protected function mergeAndExpandAttributes($attributes)
+    protected function mergeAndExpandAttributes($attributes, array $inlineAttributes = [])
     {
         return $this->expandAttributes(
-            collect($attributes)->reduce(function ($attributes, $generate) {
-                return array_merge($attributes, call_user_func($generate, $this->faker));
+            collect($attributes)->reduce(function ($attributes, $generate) use ($inlineAttributes) {
+                return array_merge($attributes, call_user_func($generate, $this->faker, $inlineAttributes));
             }, [])
         );
     }

@@ -173,7 +173,7 @@ factory(Team::class)
 
 ### Creating random translations
 
-For seeding an entire development environment it can be useful with random relations. 
+For seeding an entire development environment it can be useful with random relations. Here we may utilize the 'odds' helper.
 
 Consider the following example from a real-life project:
 
@@ -182,7 +182,7 @@ $courses = Collection::times(5)->map(function () {
     return factory(Course::class)
         ->with(random_int(1, 5), 'chapters')
         ->with(random_int(1, 5), 'chapters.videos')
-        ->when(random_int(0, 2), function ($course) { // 66% of courses will be translated  
+        ->odds('66%', function ($course) { // 66% of courses will be translated. 'Odds' also accepts decimals, ie 2/3
             $course
                 ->with(1, 'danish', 'translations')
                 ->with(random_int(1, 5), 'translations.chapters')
@@ -226,6 +226,7 @@ These are the provided methods on the `FactoryBuilder` instance in addition to t
 
 - fill
 ->fillPivot (only applicable on BelongsToMany
+- odds
 - when
 - with
 - andWith

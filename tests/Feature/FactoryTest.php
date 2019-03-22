@@ -32,13 +32,28 @@ class FactoryTest extends TestCase
             $builder->times(2);
         };
 
-        $this->assertInstanceOf(User::class,
-            $this->factory(User::class)->when(false, $createTwice)->create()
-        );
+        $this->assertInstanceOf(User::class, $this->factory(User::class)->when(false, $createTwice)->create());
+        $this->assertInstanceOf(Collection::class, $this->factory(User::class)->when(true, $createTwice)->create());
+    }
 
-        $this->assertInstanceOf(Collection::class,
-            $this->factory(User::class)->when(true, $createTwice)->create()
-        );
+    /** @test **/
+    public function it_applies_closures_given_certain_odds()
+    {
+        $createTwice = function ($builder) {
+            $builder->times(2);
+        };
+
+        // With decimal
+        $this->assertInstanceOf(User::class, $this->factory(User::class)->odds(0/1, $createTwice)->create());
+        $this->assertInstanceOf(Collection::class, $this->factory(User::class)->odds(1/1, $createTwice)->create());
+
+        // With 0-100
+        $this->assertInstanceOf(User::class, $this->factory(User::class)->odds(0, $createTwice)->create());
+        $this->assertInstanceOf(Collection::class, $this->factory(User::class)->odds(100, $createTwice)->create());
+
+        // With string percentage
+        $this->assertInstanceOf(User::class, $this->factory(User::class)->odds('0%', $createTwice)->create());
+        $this->assertInstanceOf(Collection::class, $this->factory(User::class)->odds('100%', $createTwice)->create());
     }
 
     /** @test **/

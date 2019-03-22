@@ -138,6 +138,29 @@ class FactoryBuilder
     }
 
     /**
+     * Apply the callback given certain odds are met.
+     *
+     * Example odds: 50, '50%', 1/2
+     *
+     * @param mixed $odds
+     * @param callable $callback
+     * @param callable|null $default
+     * @return $this
+     */
+    public function odds($odds, $callback, $default = null)
+    {
+        if (is_string($odds)) {
+            $odds = intval($odds);
+        }
+
+        if (is_numeric($odds) && $odds >= 0 && $odds <= 1) {
+            $odds = $odds * 100;
+        }
+
+        return $this->when(rand(0, 100) <= $odds, $callback, $default);
+    }
+
+    /**
      * Set the state to be applied to the model.
      *
      * @param  string  $state

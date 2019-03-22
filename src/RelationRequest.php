@@ -123,6 +123,7 @@ class RelationRequest
     {
         $request = new static($this->getRelatedClass(), $this->batch, $this->getNestedPath());
         $request->amount = $this->amount;
+        $request->attributes = $this->attributes;
         $request->builder = $this->builder;
         $request->states = $this->states;
 

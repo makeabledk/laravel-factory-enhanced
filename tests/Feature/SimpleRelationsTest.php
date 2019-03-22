@@ -78,15 +78,25 @@ class SimpleRelationsTest extends TestCase
         $this->assertEquals(5, $company->customers->first()->satisfaction);
     }
 
-
     /** @test **/
-    public function additional_attributes_can_be_passed_in_with_method()
+    public function additional_attributes_can_be_passed_inline()
     {
         $company = $this->factory(Company::class)
             ->with('owner', ['password' => 'foobar'])
             ->create();
 
         $this->assertEquals('foobar', $company->owner->password);
+    }
+
+    /** @test **/
+    public function additional_attributes_can_be_passed_inline_for_nested_relations()
+    {
+        $company = $this->factory(Company::class)
+            ->with(1, 'divisions')
+            ->with(2, 'divisions.manager', ['password' => 'foobar'])
+            ->create();
+
+        $this->assertEquals('foobar', $company->divisions->first()->manager->password);
     }
 
     /** @test **/

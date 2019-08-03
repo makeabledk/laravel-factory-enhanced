@@ -1,3 +1,4 @@
+![Laravel Factory Enhanced - Supercharge your tests](https://raw.githubusercontent.com/makeabledk/laravel-factory-enhanced/master/banner.png?version=1)
 
 # Laravel Factory Enhanced 🔥
 

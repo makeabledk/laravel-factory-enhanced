@@ -1,4 +1,4 @@
-![Laravel Factory Enhanced - Supercharge your tests](https://raw.githubusercontent.com/makeabledk/laravel-factory-enhanced/master/banner.png)
+![Laravel Factory Enhanced - Supercharge your tests](https://raw.githubusercontent.com/makeabledk/laravel-factory-enhanced/master/banner-1.png)
 
 # Laravel Factory Enhanced 🔥
 

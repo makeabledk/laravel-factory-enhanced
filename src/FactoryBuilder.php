@@ -388,7 +388,7 @@ class FactoryBuilder
     {
         return collect($this->states->getDefinition($this->class, $this->name))
             ->concat($this->attributes)
-            ->concat(collect($this->activeStates)->map(function ($state) {
+            ->concat(collect($this->activeStates)->filter()->map(function ($state) {
                 return $this->states->getState($this->class, $state);
             }))
             ->push($this->wrapCallable($attributes))

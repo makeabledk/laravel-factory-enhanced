@@ -14,13 +14,13 @@ class FactoryTest extends TestCase
     use RefreshDatabase;
 
     /** @test **/
-    public function creating_models_with_no_relations()
+    public function it_creates_models_with_no_relations()
     {
         $this->assertInstanceOf(User::class, $this->factory(User::class)->create());
     }
 
     /** @test **/
-    public function creating_models_without_prior_definitions()
+    public function it_creates_models_without_prior_definitions()
     {
         $this->assertInstanceOf(Customer::class, $this->factory(Customer::class)->create());
     }
@@ -74,15 +74,12 @@ class FactoryTest extends TestCase
         $factory = $this->factory();
         $factory->defineAs(Customer::class, 'special', function (Generator $faker, array $attributes) {
             $this->assertEquals('bar', $attributes['foo']);
-
             return [];
         });
 
-        $this->assertEquals('bar', $factory
-            ->of(Customer::class, 'special')
-            ->make(['foo' => 'bar'])
-            ->foo
-        );
+        $customer = $factory->of(Customer::class, 'special')->make(['foo' => 'bar']);
+
+        $this->assertEquals('bar', $customer->foo);
 
         unset($factory[Customer::class]['special']);
     }

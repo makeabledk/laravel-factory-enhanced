@@ -29,6 +29,7 @@ class CreateTestTables extends Migration
             $table->unsignedInteger('company_id')->nullable();
             $table->unsignedInteger('manager_id')->nullable();
             $table->tinyInteger('active')->default(0);
+            $table->tinyInteger('flagship')->default(0);
             $table->string('name');
             $table->timestamps();
         });

@@ -122,7 +122,7 @@ class StateManager
      */
     public function getState($class, $state)
     {
-        $builder = data_get($this->states, "{$class}.{$state}") ?: $this->wrapCallable([]);
+        $builder = data_get($this->states, "{$class}.{$state}");
 
         if (! $builder) {
             throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");

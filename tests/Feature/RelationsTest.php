@@ -9,9 +9,11 @@ use Makeable\LaravelFactory\Tests\Stubs\Division;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\TestCase;
 
-class SimpleRelationsTest extends TestCase
+class RelationsTest extends TestCase
 {
     use RefreshDatabase;
+
+    // DIFFERENT RELATIONSHIP TYPES
 
     /** @test **/
     public function it_creates_models_with_belongs_to_relations()
@@ -48,6 +50,17 @@ class SimpleRelationsTest extends TestCase
     }
 
     /** @test **/
+    public function it_creates_models_with_belongs_to_many_relations()
+    {
+        $division = $this->factory(Division::class)
+            ->with(2, 'employees')
+            ->create();
+
+        $this->assertInstanceOf(User::class, $division->employees->first());
+        $this->assertEquals(2, $division->employees->count());
+    }
+
+    /** @test **/
     public function it_creates_models_with_multiple_relations()
     {
         $company = $this->factory(Company::class)
@@ -59,6 +72,8 @@ class SimpleRelationsTest extends TestCase
         $this->assertInstanceOf(Division::class, $company->divisions->first());
     }
 
+    // FUNCTIONALITY AND BEHAVIOR
+
     /** @test **/
     public function the_same_relation_can_be_created_multiple_times_using_andWith()
     {
@@ -69,45 +84,19 @@ class SimpleRelationsTest extends TestCase
             ->create();
 
         $this->assertEquals(2, $company->divisions->count());
-        $this->assertNull($company->divisions->get(0)->manager);
-        $this->assertInstanceOf(User::class, $company->divisions->get(1)->manager);
+        $this->assertNull($company->divisions->first()->manager);
+        $this->assertInstanceOf(User::class, $company->divisions->last()->manager);
     }
 
     /** @test **/
-    public function states_can_be_specified_for_nested_relations()
+    public function additional_attributes_can_be_passed_inline_for_relations()
     {
         $company = $this->factory(Company::class)
-            ->with('owner')
-            ->with(2, 'happy', 'customers')
-            ->with(3, 'active', 'divisions')
-            ->with(3, 'divisions.employees')
+            ->with(1, 'divisions', ['active' => 1])
+            ->with('divisions.manager', ['password' => 'foobar'])
             ->create();
 
-        $this->assertEquals(3, $company->divisions->count());
-        $this->assertEquals(2, $company->customers->count());
-        $this->assertEquals(3, $company->divisions->first()->employees->count());
         $this->assertEquals(1, $company->divisions->first()->active);
-        $this->assertEquals(5, $company->customers->first()->satisfaction);
-    }
-
-    /** @test **/
-    public function additional_attributes_can_be_passed_inline()
-    {
-        $company = $this->factory(Company::class)
-            ->with('owner', ['password' => 'foobar'])
-            ->create();
-
-        $this->assertEquals('foobar', $company->owner->password);
-    }
-
-    /** @test **/
-    public function additional_attributes_can_be_passed_inline_for_nested_relations()
-    {
-        $company = $this->factory(Company::class)
-            ->with(1, 'divisions')
-            ->with(2, 'divisions.manager', ['password' => 'foobar'])
-            ->create();
-
         $this->assertEquals('foobar', $company->divisions->first()->manager->password);
     }
 
@@ -116,6 +105,37 @@ class SimpleRelationsTest extends TestCase
     {
         $this->expectException(\BadMethodCallException::class);
         $this->factory(Company::class)->with(1, 'invalidRelation')->create();
+    }
+
+    /** @test **/
+    public function it_accepts_pivot_attributes_on_belongs_to_many_relations()
+    {
+        $division = $this->factory(Division::class)->with(1, 'employees', function ($employee) {
+            $employee->fillPivot(['started_at' => '2019-01-01 00:00:00']);
+        })->create();
+
+        $employees = $division->employees()->withPivot('started_at')->get();
+
+        $this->assertEquals('2019-01-01 00:00:00', $employees->first()->pivot->started_at);
+        $this->assertEquals(1, $employees->count());
+    }
+
+    /** @test **/
+    public function it_accepts_closures_as_pivot_attributes_and_they_will_evaluate_on_each_model()
+    {
+        [$i, $dates] = [0, [now()->subMonth(), now()->subDay()]];
+
+        $division = $this->factory(Division::class)->with(2, 'employees', function ($employee) use ($dates, &$i) {
+            $employee->fillPivot(function ($faker) use ($dates, &$i) {
+                return ['started_at' => $dates[$i++]];
+            });
+        })->create();
+
+        $employees = $division->employees()->withPivot('started_at')->get();
+
+        $this->assertEquals(2, $employees->count());
+        $this->assertEquals($dates[0]->toDateTimeString(), $employees->get(0)->pivot->started_at);
+        $this->assertEquals($dates[1]->toDateTimeString(), $employees->get(1)->pivot->started_at);
     }
 
     /** @test **/

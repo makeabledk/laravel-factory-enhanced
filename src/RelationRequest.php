@@ -6,6 +6,7 @@ use BadMethodCallException;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 
 class RelationRequest
 {
@@ -102,12 +103,12 @@ class RelationRequest
                 return $this->builder = $arg;
             }
 
-            if ($this->isValidRelation($arg)) {
+            if (is_string($arg) && $this->isValidRelation($arg)) {
                 return $this->path = $arg;
             }
 
             // If nothing else, we'll assume $arg represent some state
-            array_push($this->states, $arg);
+            $this->states = array_merge($this->states, Arr::wrap($arg));
         });
     }
 
@@ -187,6 +188,6 @@ class RelationRequest
     {
         $relation = $this->getRelationName($path);
 
-        return $path !== null && method_exists($this->model, $relation) && $this->model->$relation() instanceof Relation;
+        return method_exists($this->model, $relation) && $this->model->$relation() instanceof Relation;
     }
 }

@@ -45,6 +45,19 @@ class StateTest extends TestCase
 
         $this->assertEquals(1, $company->divisions->count());
         $this->assertEquals(1, $company->divisions->first()->active);
+        $this->assertEquals(1, $company->divisions->first()->flagship);
+    }
+
+    /** @test **/
+    public function multiple_states_can_be_passed_for_relations_inline_as_array()
+    {
+        $company = $this->factory(Company::class)
+            ->with(1, ['active', 'flagship'], 'divisions')
+            ->create();
+
+        $this->assertEquals(1, $company->divisions->count());
+        $this->assertEquals(1, $company->divisions->first()->active);
+        $this->assertEquals(1, $company->divisions->first()->flagship);
     }
 
     /** @test **/

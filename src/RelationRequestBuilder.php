@@ -40,15 +40,15 @@ class RelationRequestBuilder
      */
     public function all(...$args)
     {
-       if ($this->isRelationRequest($args)) {
-           return collect([$args[0]]);
-       }
+        if ($this->isRelationRequest($args)) {
+            return collect([$args[0]]);
+        }
 
-       if ($this->isArrayOfRelationArgs($args)) {
-           return $this->toRelationRequests($args[0]);
-       }
+        if ($this->isArrayOfRelationArgs($args)) {
+            return $this->toRelationRequests($args[0]);
+        }
 
-       return $this->toRelationRequests([$args]);
+        return $this->toRelationRequests([$args]);
     }
 
     /**

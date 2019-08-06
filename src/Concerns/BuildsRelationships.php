@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
-use Illuminate\Support\Collection;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\RelationRequest;
@@ -62,7 +61,7 @@ trait BuildsRelationships
     }
 
     /**
-     * Build a factory for given RelationRequest
+     * Build a factory for given RelationRequest.
      *
      * @param RelationRequest $request
      * @return FactoryBuilder
@@ -111,7 +110,7 @@ trait BuildsRelationships
                     $models->each(function ($model) use ($sibling, $relation, $factory) {
                         $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
                     });
-                };
+                }
             });
     }
 
@@ -127,7 +126,7 @@ trait BuildsRelationships
             ->each(function ($batches, $relation) use ($parent) {
                 foreach ($batches as $factory) {
                     $factory->inheritConnection($this)->create([
-                        $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey()
+                        $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey(),
                     ]);
                 }
             });

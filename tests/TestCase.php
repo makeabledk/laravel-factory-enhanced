@@ -32,6 +32,9 @@ class TestCase extends BaseTestCase
         $this->factory()->define(Company::class, function (Generator $faker) {
             return ['name' => $faker->company];
         });
+        $this->factory()->preset(Company::class, 'startup', function (FactoryBuilder $company, Generator $faker) {
+            $company->with(1, 'divisions')->with(1, 'divisions.employees');
+        });
 
         $this->factory()->state(Customer::class, 'happy', ['satisfaction' => 5]);
 

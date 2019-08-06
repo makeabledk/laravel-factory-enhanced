@@ -72,4 +72,25 @@ class StateTest extends TestCase
         $this->assertEquals(2, $company->divisions->first()->employees->count());
         $this->assertEquals(1, $company->divisions->first()->active);
     }
+
+    /** @test **/
+    public function it_can_apply_a_preset()
+    {
+        $company = $this->factory(Company::class)->preset('startup')->create();
+
+        $this->assertEquals(1, $company->divisions->count());
+        $this->assertEquals(1, $company->divisions->first()->employees->count());
+    }
+
+    /** @test **/
+    public function multiple_presets_can_be_passed_for_relations_inline_as_array()
+    {
+        $company = $this->factory(Company::class)
+            ->with(1, ['active', 'flagship'], 'divisions')
+            ->create();
+
+        $this->assertEquals(1, $company->divisions->count());
+        $this->assertEquals(1, $company->divisions->first()->active);
+        $this->assertEquals(1, $company->divisions->first()->flagship);
+    }
 }

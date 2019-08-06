@@ -75,6 +75,21 @@ class Factory implements ArrayAccess
     }
 
     /**
+     * Define a preset with a callable.
+     *
+     * @param string $class
+     * @param string $state
+     * @param callable $callable
+     * @return $this
+     */
+    public function preset($class, $state, callable $callable)
+    {
+        $this->states->preset($class, $state, $callable);
+
+        return $this;
+    }
+
+    /**
      * Define a state with a given set of attributes.
      *
      * @param  string  $class

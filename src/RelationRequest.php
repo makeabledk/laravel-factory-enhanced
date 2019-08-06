@@ -39,6 +39,13 @@ class RelationRequest
     public $amount;
 
     /**
+     * The presets to apply.
+     *
+     * @var array
+     */
+    public $presets = [];
+
+    /**
      * The states to apply.
      *
      * @var array
@@ -48,7 +55,7 @@ class RelationRequest
     /**
      * A build function.
      *
-     * @var array
+     * @var callable | null
      */
     public $builder = null;
 

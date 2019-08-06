@@ -18,6 +18,13 @@ class StateManager
     protected $definitions = [];
 
     /**
+     * The registered model presets.
+     *
+     * @var array
+     */
+    protected $presets = [];
+
+    /**
      * The registered model states.
      *
      * @var array
@@ -37,11 +44,6 @@ class StateManager
      * @var array
      */
     protected $afterCreating = [];
-
-    /**
-     * @var array
-     */
-    protected $stateProviders = [];
 
     /**
      * Define a class with a given short-name.
@@ -92,6 +94,37 @@ class StateManager
      * Define a state with a given set of attributes.
      *
      * @param  string  $class
+     * @param  string  $preset
+     * @param  callable|array  $builder
+     * @return $this
+     */
+    public function preset($class, $preset, $builder)
+    {
+        $this->presets[$class][$preset] = $this->wrapCallable($builder);
+
+        return $this;
+    }
+
+    /**
+     * @param $class
+     * @param $preset
+     * @return Closure
+     */
+    public function getPreset($class, $preset)
+    {
+        $builder = data_get($this->presets, "{$class}.{$preset}");
+
+        if (! $builder) {
+            throw new InvalidArgumentException("Unable to locate [{$preset}] preset for [{$class}].");
+        }
+
+        return $builder;
+    }
+
+    /**
+     * Define a state with a given set of attributes.
+     *
+     * @param  string  $class
      * @param  string  $state
      * @param  callable|array  $builder
      * @return $this
@@ -105,20 +138,8 @@ class StateManager
 
     /**
      * @param $class
-     * @param $states
-     * @return array
-     */
-    public function getStates($class, $states)
-    {
-        return array_map(function ($state) use ($class) {
-            return $this->getState($class, $state);
-        }, $states);
-    }
-
-    /**
-     * @param $class
      * @param $state
-     * @return mixed
+     * @return Closure
      */
     public function getState($class, $state)
     {
@@ -175,16 +196,5 @@ class StateManager
     public function getAfterCreatingCallbacks($class, $state)
     {
         return data_get($this->afterCreating, "{$class}.{$state}", []);
-    }
-
-    /**
-     * @param $provider
-     * @return $this
-     */
-    public function provider($provider)
-    {
-        $this->stateProviders[] = $provider;
-
-        return $this;
     }
 }

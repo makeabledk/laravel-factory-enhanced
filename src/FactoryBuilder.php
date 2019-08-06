@@ -160,6 +160,34 @@ class FactoryBuilder
     }
 
     /**
+     * Apply one or more presets to the model.
+     *
+     * @param $preset
+     * @return $this
+     */
+    public function preset($preset)
+    {
+        return $this->presets($preset);
+    }
+
+    /**
+     * Apply one or more presets to the model.
+     *
+     * @param $presets
+     * @return $this
+     */
+    public function presets($presets)
+    {
+        $presets = is_array($presets) ? $presets : func_get_args();
+
+        foreach ($presets as $preset) {
+            $this->tap($this->states->getPreset($this->class, $preset));
+        }
+
+        return $this;
+    }
+
+    /**
      * Set the state to be applied to the model.
      *
      * @param  string  $state
@@ -191,7 +219,7 @@ class FactoryBuilder
      */
     public function tap($callback)
     {
-        call_user_func($callback, $this);
+        call_user_func($callback, $this, $this->faker);
 
         return $this;
     }

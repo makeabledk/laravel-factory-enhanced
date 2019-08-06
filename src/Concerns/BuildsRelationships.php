@@ -48,15 +48,14 @@ trait BuildsRelationships
         else {
             $factory
                 ->fill($request->attributes)
-                ->states($request->states);
-
-            if ($request->amount) {
-                $factory->times($request->amount);
-            }
-
-            if ($request->builder) {
-                call_user_func($request->builder, $factory);
-            }
+                ->presets($request->presets)
+                ->states($request->states)
+                ->when($request->amount, function ($factory, $amount) {
+                    $factory->times($amount);
+                })
+                ->when($request->builder, function ($factory, $builder) {
+                    $factory->tap($builder);
+                });
         }
 
         return $this;

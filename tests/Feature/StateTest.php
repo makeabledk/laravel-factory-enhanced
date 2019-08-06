@@ -2,9 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\TestCase;

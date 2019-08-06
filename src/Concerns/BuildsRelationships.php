@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\RelationRequest;
@@ -88,7 +90,7 @@ trait BuildsRelationships
         collect($this->relations)
             ->filter($this->relationTypeIs(BelongsTo::class))
             ->each(function ($batches, $relation) use ($child) {
-                foreach (array_slice($batches, 0, 1) as $batch => $factory) {
+                foreach (array_slice($batches, 0, 1) as $factory) {
                     $parent = $this->collectModel($factory->create());
                     $child->$relation()->associate($parent);
                 }
@@ -105,7 +107,7 @@ trait BuildsRelationships
         collect($this->relations)
             ->filter($this->relationTypeIs(BelongsToMany::class))
             ->each(function ($batches, $relation) use ($sibling) {
-                foreach ($batches as $batch => $factory) {
+                foreach ($batches as $factory) {
                     $models = $this->collect($factory->create());
                     $models->each(function ($model) use ($sibling, $relation, $factory) {
                         $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
@@ -125,6 +127,13 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(HasOneOrMany::class))
             ->each(function ($batches, $relation) use ($parent) {
                 foreach ($batches as $factory) {
+                    // In case of morph-one / morph-many we'll need to set the morph type as well
+                    if (($morphRelation = $this->newRelation($relation)) instanceof MorphOneOrMany) {
+                        $factory->fill([
+                            $morphRelation->getMorphType() => (new $this->class)->getMorphClass(),
+                        ]);
+                    }
+
                     $factory->inheritConnection($this)->create([
                         $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey(),
                     ]);
@@ -141,8 +150,17 @@ trait BuildsRelationships
     protected function relationTypeIs($relationType)
     {
         return function ($batches, $relation) use ($relationType) {
-            return (new $this->class)->$relation() instanceof $relationType;
+            return $this->newRelation($relation) instanceof $relationType;
         };
+    }
+
+    /**
+     * @param $relationName
+     * @return Relation
+     */
+    protected function newRelation($relationName)
+    {
+        return (new $this->class)->$relationName();
     }
 
     /**

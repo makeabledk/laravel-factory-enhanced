@@ -40,5 +40,11 @@ class CreateTestTables extends Migration
             $table->timestamp('started_at')->nullable();
             $table->timestamps();
         });
+
+        Schema::create('images', function (Blueprint $table) {
+            $table->increments('id');
+            $table->morphs('imageable');
+            $table->timestamps();
+        });
     }
 }

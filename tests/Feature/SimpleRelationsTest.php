@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Division;
+use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\TestCase;
 
 class SimpleRelationsTest extends TestCase
@@ -33,6 +34,17 @@ class SimpleRelationsTest extends TestCase
         $this->assertInstanceOf(Company::class, $company);
         $this->assertInstanceOf(Division::class, $company->divisions->first());
         $this->assertEquals(2, $company->divisions->count());
+    }
+
+    /** @test **/
+    public function it_creates_models_with_morph_many_relations()
+    {
+        $company = $this->factory(Company::class)
+            ->with('logo')
+            ->create();
+
+        $this->assertInstanceOf(Company::class, $company);
+        $this->assertInstanceOf(Image::class, $company->logo);
     }
 
     /** @test **/

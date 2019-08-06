@@ -77,7 +77,7 @@ class RelationRequest
                 'Relation not found. Failed to locate any of the following strings as defined relations on model "'.get_class($this->model).'": '.
                 ((count($this->states) > 0)
                     ? str_replace('""', 'NULL', '"'.implode('", "', $this->states).'"')
-                    : '- NO POSSIBLY RELATION NAMES GIVEN -')
+                    : '- NO POSSIBLE RELATION NAMES GIVEN -')
             );
         }
     }

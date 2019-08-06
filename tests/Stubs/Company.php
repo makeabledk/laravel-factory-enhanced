@@ -17,6 +17,11 @@ class Company extends Model
         return $this->hasMany(Division::class);
     }
 
+    public function logo()
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
+
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');

@@ -30,13 +30,13 @@ class TestCase extends BaseTestCase
         });
 
         $this->factory()->define(Company::class, function (Generator $faker) {
-            return ['name' => $faker->company,];
+            return ['name' => $faker->company];
         });
 
         $this->factory()->state(Customer::class, 'happy', ['satisfaction' => 5]);
 
         $this->factory()->define(Division::class, function (Generator $faker) {
-            return ['name' => $faker->company,];
+            return ['name' => $faker->company];
         });
         $this->factory()->state(Division::class, 'active', ['active' => 1]);
         $this->factory()->state(Division::class, 'flagship', ['flagship' => 1]);

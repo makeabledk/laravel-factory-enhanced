@@ -74,6 +74,7 @@ class FactoryTest extends TestCase
         $factory = $this->factory();
         $factory->defineAs(Customer::class, 'special', function (Generator $faker, array $attributes) {
             $this->assertEquals('bar', $attributes['foo']);
+
             return [];
         });
 

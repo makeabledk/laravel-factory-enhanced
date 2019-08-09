@@ -17,53 +17,31 @@ class NestedRelationsTest extends TestCase
     {
         $company = $this->factory(Company::class)
             ->with('owner')
-            ->with('divisions.manager')
+            ->with('departments.manager')
             ->create();
 
-        $this->assertEquals(1, $company->divisions->count());
-        $this->assertInstanceOf(User::class, $company->divisions->first()->manager);
+        $this->assertEquals(1, $company->departments->count());
+        $this->assertInstanceOf(User::class, $company->departments->first()->manager);
     }
 
     /** @test **/
-    public function nested_relations_can_be_composed_by_array_syntax()
+    public function nested_relations_can_be_built_by_closures()
     {
         $company = $this->factory(Company::class)
-            ->with('owner')
-            ->with([
-                'divisions' => 2,
-                'divisions.manager',
-            ])
+            ->with('departments', function (FactoryBuilder $departments) {
+                $departments
+                    ->fill(['name' => 'foo'])
+                    ->times(2)
+                    ->with('manager');
+            })
             ->create();
 
-        $this->assertEquals(2, $company->divisions->count());
-        $this->assertInstanceOf(User::class, $company->divisions->first()->manager);
+        $this->assertEquals(2, $company->departments->count());
+        $this->assertEquals('foo', $company->departments->first()->name);
+        $this->assertInstanceOf(User::class, $company->departments->first()->manager);
         $this->assertNotEquals(
-            $company->divisions->get(0)->manager->id,
-            $company->divisions->get(1)->manager->id
-        );
-    }
-
-    /** @test **/
-    public function nested_relations_can_be_customized_by_closures()
-    {
-        $company = $this->factory(Company::class)
-            ->with('owner')
-            ->with([
-                'divisions' => function (FactoryBuilder $divisions) {
-                    $divisions
-                        ->fill(['name' => 'foo'])
-                        ->times(2)
-                        ->with('manager');
-                },
-            ])
-            ->create();
-
-        $this->assertEquals(2, $company->divisions->count());
-        $this->assertEquals('foo', $company->divisions->first()->name);
-        $this->assertInstanceOf(User::class, $company->divisions->first()->manager);
-        $this->assertNotEquals(
-            $company->divisions->get(0)->manager->id,
-            $company->divisions->get(1)->manager->id
+            $company->departments->get(0)->manager->id,
+            $company->departments->get(1)->manager->id
         );
     }
 
@@ -72,11 +50,11 @@ class NestedRelationsTest extends TestCase
     {
         $company = $this->factory(Company::class)
             ->with('owner')
-            ->with(1, 'divisions')
-            ->with(1, 'divisions.manager')
+            ->with(1, 'departments')
+            ->with(1, 'departments.manager')
             ->create();
 
-        $this->assertEquals(1, $company->divisions->count());
-        $this->assertInstanceOf(User::class, $company->divisions->first()->manager);
+        $this->assertEquals(1, $company->departments->count());
+        $this->assertInstanceOf(User::class, $company->departments->first()->manager);
     }
 }

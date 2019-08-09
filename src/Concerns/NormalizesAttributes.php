@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 trait NormalizesAttributes
 {
     /**
+     * Ensure a query result is returned as a collection.
+     *
      * @param $result
      * @return \Illuminate\Support\Collection
      */
@@ -20,6 +22,8 @@ trait NormalizesAttributes
     }
 
     /**
+     * Ensure a query result is returned as a model.
+     *
      * @param $results
      * @return Model
      */
@@ -29,6 +33,8 @@ trait NormalizesAttributes
     }
 
     /**
+     * Ensure a subject is a callable.
+     *
      * @param $arg
      * @return callable
      */

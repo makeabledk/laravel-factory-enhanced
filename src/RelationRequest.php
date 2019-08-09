@@ -72,7 +72,6 @@ class RelationRequest
      * @param $class
      * @param $batch
      * @param $args
-     * @throws Exception
      */
     public function __construct($class, $batch, $args)
     {
@@ -80,6 +79,8 @@ class RelationRequest
 
         $this->parseArgs($args);
 
+        // In case no matching relation found, be sure to give the
+        // developer a useful exception for debugging purposes.
         if (! $this->path) {
             throw new BadMethodCallException(
                 'Relation not found. Failed to locate any of the following strings as defined relations on model "'.get_class($this->model).'": '.
@@ -91,7 +92,7 @@ class RelationRequest
     }
 
     /**
-     * Parse the arguments given to 'with' .
+     * Parse the arguments given to 'with'.
      *
      * @param array $args
      */
@@ -114,15 +115,15 @@ class RelationRequest
                 return $this->path = $arg;
             }
 
-            // If nothing else, we'll assume $arg represent some state
-            $this->states = array_merge($this->states, Arr::wrap($arg));
+            // If nothing else, we'll assume $arg represent some state.
+            return $this->states = array_merge($this->states, Arr::wrap($arg));
         });
     }
 
     /**
      * Create a new relationship request for nested relations.
      *
-     * @return static
+     * @return RelationRequest
      */
     public function createNestedRequest()
     {

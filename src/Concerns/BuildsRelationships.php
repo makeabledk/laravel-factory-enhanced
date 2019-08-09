@@ -16,7 +16,7 @@ use Makeable\LaravelFactory\RelationRequest;
 trait BuildsRelationships
 {
     /**
-     * The current batch index.
+     * The current batch no.
      *
      * @var int
      */
@@ -39,12 +39,12 @@ trait BuildsRelationships
     {
         $factory = $this->buildFactoryForRequest($request);
 
-        // Recursively create factories until no further nesting
+        // Recursively create factories until no further nesting.
         if ($request->hasNesting()) {
             $factory->with($request->createNestedRequest());
         }
 
-        // Apply the request onto the newly created factory
+        // Apply the request onto the newly created factory.
         else {
             $factory
                 ->fill($request->attributes)
@@ -126,7 +126,7 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(HasOneOrMany::class))
             ->each(function ($batches, $relation) use ($parent) {
                 foreach ($batches as $factory) {
-                    // In case of morph-one / morph-many we'll need to set the morph type as well
+                    // In case of morphOne / morphMany we'll need to set the morph type as well.
                     if (($morphRelation = $this->newRelation($relation)) instanceof MorphOneOrMany) {
                         $factory->fill([
                             $morphRelation->getMorphType() => (new $this->class)->getMorphClass(),

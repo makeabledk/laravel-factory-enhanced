@@ -36,14 +36,14 @@ class StateManager
      *
      * @var array
      */
-    protected $afterMaking = [];
+    public $afterMaking = [];
 
     /**
      * The registered after creating callbacks.
      *
      * @var array
      */
-    protected $afterCreating = [];
+    public $afterCreating = [];
 
     /**
      * Define a class with a given short-name.
@@ -167,16 +167,6 @@ class StateManager
 
     /**
      * @param $class
-     * @param $state
-     * @return array
-     */
-    public function getAfterMakingCallbacks($class, $state)
-    {
-        return data_get($this->afterMaking, "{$class}.{$state}", []);
-    }
-
-    /**
-     * @param $class
      * @param $name
      * @param callable $callback
      * @return $this
@@ -186,15 +176,5 @@ class StateManager
         $this->afterCreating[$class][$name][] = $callback;
 
         return $this;
-    }
-
-    /**
-     * @param $class
-     * @param $state
-     * @return array
-     */
-    public function getAfterCreatingCallbacks($class, $state)
-    {
-        return data_get($this->afterCreating, "{$class}.{$state}", []);
     }
 }

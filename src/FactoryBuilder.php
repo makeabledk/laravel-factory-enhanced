@@ -81,6 +81,20 @@ class FactoryBuilder
     protected $pivotAttributes = [];
 
     /**
+     * The model after making callbacks.
+     *
+     * @var array
+     */
+    protected $afterMaking = [];
+
+    /**
+     * The model after creating callbacks.
+     *
+     * @var array
+     */
+    protected $afterCreating = [];
+
+    /**
      * Create an new builder instance.
      *
      * @param  string  $class
@@ -95,6 +109,8 @@ class FactoryBuilder
         $this->name = $name;
         $this->faker = $faker;
         $this->states = $states;
+        $this->afterMaking = $states->afterMaking;
+        $this->afterCreating = $states->afterCreating;
     }
 
     /**
@@ -264,18 +280,19 @@ class FactoryBuilder
      */
     public function with(...$args)
     {
-        $builder = new RelationRequestBuilder($this->class, $this->currentBatch);
-        $builder->all(...$args)->each(function ($request) {
-            $this->loadRelation($request);
-        });
+        if (count($args) === 1 && $args[0] instanceof RelationRequest) {
+            return tap($this)->loadRelation($args[0]);
+        }
 
-        return $this;
+        return tap($this)->loadRelation(
+            new RelationRequest($this->class, $this->currentBatch, $args)
+        );
     }
 
     /**
-     * Build relations in a new batch (not belongs-to). Multiple
-     * batches can be created on the same relation, and so this
-     * way we may keep them from overwriting each other.
+     * Build relations in a new batch. Multiple batches can be
+     * created on the same relation, so that ie. multiple
+     * has-many relations can be configured differently.
      *
      * @param mixed ...$args
      * @return FactoryBuilder
@@ -327,11 +344,12 @@ class FactoryBuilder
             }
 
             $this->createBelongsTo($model);
+
             $model->save();
+
             $this->createHasMany($model);
             $this->createBelongsToMany($model);
-
-            $this->callAfter('creating', $model);
+            $this->callAfterCreating($model);
         });
     }
 
@@ -401,7 +419,7 @@ class FactoryBuilder
             }
 
             return tap($instance, function ($instance) {
-                $this->callAfter('making', $instance);
+                $this->callAfterMaking($instance);
             });
         });
     }
@@ -468,35 +486,42 @@ class FactoryBuilder
     }
 
     /**
-     * Call after callbacks for each model and state.
+     * Run after making callbacks on a collection of models.
      *
-     * @param  string  $action
-     * @param  Model  $model
+     * @param $model
+     */
+    protected function callAfterMaking($model)
+    {
+        $this->callAfter($this->afterMaking, $model);
+    }
+
+    /**
+     * Run after creating callbacks on a collection of models.
+     *
+     * @param $model
+     */
+    protected function callAfterCreating($model)
+    {
+        $this->callAfter($this->afterCreating, $model);
+    }
+
+    /**
+     * Call after callbacks for each state on model.
+     *
+     * @param array $afterCallbacks
+     * @param Model $model
      * @return void
      */
-    protected function callAfter($action, $model)
+    protected function callAfter(array $afterCallbacks, $model)
     {
         $states = array_merge([$this->name], $this->activeStates);
 
         foreach ($states as $state) {
-            $this->callAfterCallbacks($action, $model, $state);
-        }
-    }
+            $callbacks = data_get($afterCallbacks, "{$this->class}.{$state}", []);
 
-    /**
-     * Call after callbacks for each model and state.
-     *
-     * @param  string  $action
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  string  $state
-     * @return void
-     */
-    protected function callAfterCallbacks($action, $model, $state)
-    {
-        $callbacks = call_user_func([$this->states, Str::camel('get_after_'.$action.'_callbacks')], $this->class, $state);
-
-        foreach ($callbacks as $callback) {
-            $callback($model, $this->faker);
+            foreach ($callbacks as $callback) {
+                call_user_func($callback, $model, $this->faker);
+            }
         }
     }
 }

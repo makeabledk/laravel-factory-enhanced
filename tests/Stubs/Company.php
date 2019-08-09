@@ -12,9 +12,9 @@ class Company extends Model
         return $this->hasMany(Customer::class);
     }
 
-    public function divisions()
+    public function departments()
     {
-        return $this->hasMany(Division::class);
+        return $this->hasMany(Department::class);
     }
 
     public function logo()

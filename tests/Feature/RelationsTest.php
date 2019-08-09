@@ -5,7 +5,7 @@ namespace Makeable\LaravelFactory\Tests\Feature;
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
-use Makeable\LaravelFactory\Tests\Stubs\Division;
+use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\TestCase;
 
@@ -30,12 +30,12 @@ class RelationsTest extends TestCase
     public function it_creates_models_with_has_many_relations()
     {
         $company = $this->factory(Company::class)
-            ->with(2, 'divisions')
+            ->with(2, 'departments')
             ->create();
 
         $this->assertInstanceOf(Company::class, $company);
-        $this->assertInstanceOf(Division::class, $company->divisions->first());
-        $this->assertEquals(2, $company->divisions->count());
+        $this->assertInstanceOf(Department::class, $company->departments->first());
+        $this->assertEquals(2, $company->departments->count());
     }
 
     /** @test **/
@@ -52,12 +52,12 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_models_with_belongs_to_many_relations()
     {
-        $division = $this->factory(Division::class)
+        $department = $this->factory(Department::class)
             ->with(2, 'employees')
             ->create();
 
-        $this->assertInstanceOf(User::class, $division->employees->first());
-        $this->assertEquals(2, $division->employees->count());
+        $this->assertInstanceOf(User::class, $department->employees->first());
+        $this->assertEquals(2, $department->employees->count());
     }
 
     /** @test **/
@@ -65,11 +65,11 @@ class RelationsTest extends TestCase
     {
         $company = $this->factory(Company::class)
             ->with('owner')
-            ->with(2, 'divisions')
+            ->with(2, 'departments')
             ->create();
 
         $this->assertInstanceOf(User::class, $company->owner);
-        $this->assertInstanceOf(Division::class, $company->divisions->first());
+        $this->assertInstanceOf(Department::class, $company->departments->first());
     }
 
     // FUNCTIONALITY AND BEHAVIOR
@@ -79,25 +79,25 @@ class RelationsTest extends TestCase
     {
         $company = $this->factory(Company::class)
             ->with('owner')
-            ->with(1, 'divisions')
-            ->andWith(1, 'divisions.manager')
+            ->with(1, 'departments')
+            ->andWith(1, 'departments.manager')
             ->create();
 
-        $this->assertEquals(2, $company->divisions->count());
-        $this->assertNull($company->divisions->first()->manager);
-        $this->assertInstanceOf(User::class, $company->divisions->last()->manager);
+        $this->assertEquals(2, $company->departments->count());
+        $this->assertNull($company->departments->first()->manager);
+        $this->assertInstanceOf(User::class, $company->departments->last()->manager);
     }
 
     /** @test **/
     public function additional_attributes_can_be_passed_inline_for_relations()
     {
         $company = $this->factory(Company::class)
-            ->with(1, 'divisions', ['active' => 1])
-            ->with('divisions.manager', ['password' => 'foobar'])
+            ->with(1, 'departments', ['active' => 1])
+            ->with('departments.manager', ['password' => 'foobar'])
             ->create();
 
-        $this->assertEquals(1, $company->divisions->first()->active);
-        $this->assertEquals('foobar', $company->divisions->first()->manager->password);
+        $this->assertEquals(1, $company->departments->first()->active);
+        $this->assertEquals('foobar', $company->departments->first()->manager->password);
     }
 
     /** @test **/
@@ -110,11 +110,11 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_accepts_pivot_attributes_on_belongs_to_many_relations()
     {
-        $division = $this->factory(Division::class)->with(1, 'employees', function ($employee) {
+        $department = $this->factory(Department::class)->with(1, 'employees', function ($employee) {
             $employee->fillPivot(['started_at' => '2019-01-01 00:00:00']);
         })->create();
 
-        $employees = $division->employees()->withPivot('started_at')->get();
+        $employees = $department->employees()->withPivot('started_at')->get();
 
         $this->assertEquals('2019-01-01 00:00:00', $employees->first()->pivot->started_at);
         $this->assertEquals(1, $employees->count());
@@ -125,13 +125,13 @@ class RelationsTest extends TestCase
     {
         [$i, $dates] = [0, [now()->subMonth(), now()->subDay()]];
 
-        $division = $this->factory(Division::class)->with(2, 'employees', function ($employee) use ($dates, &$i) {
+        $department = $this->factory(Department::class)->with(2, 'employees', function ($employee) use ($dates, &$i) {
             $employee->fillPivot(function ($faker) use ($dates, &$i) {
                 return ['started_at' => $dates[$i++]];
             });
         })->create();
 
-        $employees = $division->employees()->withPivot('started_at')->get();
+        $employees = $department->employees()->withPivot('started_at')->get();
 
         $this->assertEquals(2, $employees->count());
         $this->assertEquals($dates[0]->toDateTimeString(), $employees->get(0)->pivot->started_at);
@@ -142,9 +142,9 @@ class RelationsTest extends TestCase
     public function regression_null_arguments_will_parse_as_state_and_then_ignored()
     {
         $company = $this->factory(Company::class)
-            ->with(1, 'divisions', null)
+            ->with(1, 'departments', null)
             ->create();
 
-        $this->assertEquals(1, $company->divisions->count());
+        $this->assertEquals(1, $company->departments->count());
     }
 }

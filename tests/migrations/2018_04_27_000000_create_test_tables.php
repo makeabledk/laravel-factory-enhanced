@@ -24,7 +24,7 @@ class CreateTestTables extends Migration
             $table->timestamps();
         });
 
-        Schema::create('divisions', function (Blueprint $table) {
+        Schema::create('departments', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('company_id')->nullable();
             $table->unsignedInteger('manager_id')->nullable();
@@ -36,7 +36,7 @@ class CreateTestTables extends Migration
 
         Schema::create('employees', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('division_id');
+            $table->unsignedInteger('department_id');
             $table->unsignedInteger('user_id');
             $table->timestamp('started_at')->nullable();
             $table->timestamps();

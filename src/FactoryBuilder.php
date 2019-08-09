@@ -6,7 +6,6 @@ use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;

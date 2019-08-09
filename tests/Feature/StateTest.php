@@ -7,7 +7,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
-use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\TestCase;
 
 class StateTest extends TestCase
@@ -83,6 +82,7 @@ class StateTest extends TestCase
         $this->assertEquals(1, $company->departments->count());
         $this->assertEquals(1, $company->departments->first()->employees->count());
     }
+
 //
 //    /** @test **/
 //    public function presets_can_be_passed_for_relations_inline()

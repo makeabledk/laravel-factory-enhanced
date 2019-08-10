@@ -179,6 +179,7 @@ class RelationRequest
             if ($match = (is_string($arg) && $this->isValidRelation($arg))) {
                 $this->path = $arg;
             }
+
             return $match;
         });
     }

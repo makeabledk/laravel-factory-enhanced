@@ -61,6 +61,8 @@ class StateManager
     }
 
     /**
+     * Check if a definition exists.
+     *
      * @param $class
      * @return bool
      */
@@ -70,6 +72,8 @@ class StateManager
     }
 
     /**
+     * Delete an existing definition.
+     *
      * @param $class
      * @return $this
      */
@@ -81,6 +85,8 @@ class StateManager
     }
 
     /**
+     * Get a definition.
+     *
      * @param $class
      * @param $name
      * @return Closure
@@ -91,7 +97,7 @@ class StateManager
     }
 
     /**
-     * Define a state with a given set of attributes.
+     * Define a preset that may later be used to configure a factory.
      *
      * @param  string  $class
      * @param  string  $preset
@@ -106,6 +112,20 @@ class StateManager
     }
 
     /**
+     * Check if a preset exists.
+     *
+     * @param $class
+     * @param $preset
+     * @return bool
+     */
+    public function presetExists($class, $preset)
+    {
+        return data_get($this->presets, "{$class}.{$preset}") !== null;
+    }
+
+    /**
+     * Get a preset.
+     *
      * @param $class
      * @param $preset
      * @return Closure
@@ -137,6 +157,8 @@ class StateManager
     }
 
     /**
+     * Get a state.
+     *
      * @param $class
      * @param $state
      * @return Closure
@@ -145,6 +167,7 @@ class StateManager
     {
         $builder = data_get($this->states, "{$class}.{$state}");
 
+        // TODO fix inconsistency with Laravel - need to check if after-callback exists
         if (! $builder) {
             throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
         }
@@ -153,6 +176,8 @@ class StateManager
     }
 
     /**
+     * Define a callback to run after making a model.
+     *
      * @param $class
      * @param $name
      * @param callable $callback
@@ -166,6 +191,8 @@ class StateManager
     }
 
     /**
+     * Define a callback to run after creating a model.
+     *
      * @param $class
      * @param $name
      * @param callable $callback

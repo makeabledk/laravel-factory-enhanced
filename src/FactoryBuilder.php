@@ -28,7 +28,7 @@ class FactoryBuilder
      *
      * @var StateManager
      */
-    protected $states;
+    protected $stateManager;
 
     /**
      * The database connection on which the model instance should be persisted.
@@ -63,7 +63,7 @@ class FactoryBuilder
      *
      * @var array
      */
-    protected $activeStates = [];
+    protected $states = [];
 
     /**
      * Attributes to apply.
@@ -98,18 +98,18 @@ class FactoryBuilder
      *
      * @param  string  $class
      * @param  string  $name
-     * @param  StateManager $states
+     * @param  StateManager $stateManager
      * @param  \Faker\Generator  $faker
      * @return void
      */
-    public function __construct($class, $name, StateManager $states, Faker $faker)
+    public function __construct($class, $name, StateManager $stateManager, Faker $faker)
     {
         $this->class = $class;
         $this->name = $name;
         $this->faker = $faker;
-        $this->states = $states;
-        $this->afterMaking = $states->afterMaking;
-        $this->afterCreating = $states->afterCreating;
+        $this->stateManager = $stateManager;
+        $this->afterMaking = $stateManager->afterMaking;
+        $this->afterCreating = $stateManager->afterCreating;
     }
 
     /**
@@ -196,7 +196,7 @@ class FactoryBuilder
         $presets = is_array($presets) ? $presets : func_get_args();
 
         foreach ($presets as $preset) {
-            $this->tap($this->states->getPreset($this->class, $preset));
+            $this->tap($this->stateManager->getPreset($this->class, $preset));
         }
 
         return $this;
@@ -221,7 +221,7 @@ class FactoryBuilder
      */
     public function states($states)
     {
-        $this->activeStates = is_array($states) ? $states : func_get_args();
+        $this->states = is_array($states) ? $states : func_get_args();
 
         return $this;
     }
@@ -284,7 +284,7 @@ class FactoryBuilder
         }
 
         return tap($this)->loadRelation(
-            new RelationRequest($this->class, $this->currentBatch, $args)
+            new RelationRequest($this->class, $this->currentBatch, $this->stateManager, $args)
         );
     }
 
@@ -431,10 +431,10 @@ class FactoryBuilder
      */
     protected function getRawAttributes(array $attributes = [])
     {
-        return collect($this->states->getDefinition($this->class, $this->name))
+        return collect($this->stateManager->getDefinition($this->class, $this->name))
             ->concat($this->attributes)
-            ->concat(collect($this->activeStates)->filter()->map(function ($state) {
-                return $this->states->getState($this->class, $state);
+            ->concat(collect($this->states)->filter()->map(function ($state) {
+                return $this->stateManager->getState($this->class, $state);
             }))
             ->push($this->wrapCallable($attributes))
             ->pipe(function ($callables) use ($attributes) {
@@ -513,7 +513,7 @@ class FactoryBuilder
      */
     protected function callAfter(array $afterCallbacks, $model)
     {
-        $states = array_merge([$this->name], $this->activeStates);
+        $states = array_merge([$this->name], $this->states);
 
         foreach ($states as $state) {
             $callbacks = data_get($afterCallbacks, "{$this->class}.{$state}", []);

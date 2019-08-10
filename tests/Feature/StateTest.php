@@ -83,16 +83,15 @@ class StateTest extends TestCase
         $this->assertEquals(1, $company->departments->first()->employees->count());
     }
 
-//
-//    /** @test **/
-//    public function presets_can_be_passed_for_relations_inline()
-//    {
-//        $company = $this->factory(Company::class)
-//            ->with(1, 'mediumSized', 'departments')
-//            ->create();
-//
-//        $this->assertEquals(1, $company->departments->count());
-//        $this->assertEquals(4, $company->departments->first()->employees);
-//        $this->assertInstanceOf(User::class, $company->departments->first()->manager);
-//    }
+    /** @test **/
+    public function presets_can_be_passed_for_relations_inline()
+    {
+        $company = $this->factory(Company::class)
+            ->with(1, 'mediumSized', 'departments')
+            ->create();
+
+        $this->assertEquals(1, $company->departments->count());
+        $this->assertEquals(4, $company->departments->first()->employees->count());
+        $this->assertInstanceOf(User::class, $company->departments->first()->manager);
+    }
 }

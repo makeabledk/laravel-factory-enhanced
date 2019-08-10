@@ -29,6 +29,18 @@ class TestCase extends BaseTestCase
             $migrator->path(__DIR__.'/migrations/');
         });
 
+        $app['config']->set('database.default', 'primary');
+        $app['config']->set('database.connections.primary', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+        $app['config']->set('database.connections.secondary', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+
         // Make tests faster!
         Hash::setRounds(4);
 

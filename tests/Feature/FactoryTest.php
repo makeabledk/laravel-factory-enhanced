@@ -6,6 +6,7 @@ use App\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\TestCase;
 
@@ -23,6 +24,27 @@ class FactoryTest extends TestCase
     public function it_creates_models_without_prior_definitions()
     {
         $this->assertInstanceOf(Customer::class, $this->factory(Customer::class)->create());
+    }
+
+    /** @test **/
+    public function it_creates_models_on_a_custom_connection()
+    {
+        $company = factory(Company::class)
+            ->connection('secondary')
+            ->create(['name' => 'Evil corp']);
+
+        $this->assertNull(Company::where('name', 'Evil corp')->first());
+        $this->assertEquals($company->id, Company::on('secondary')->where('name', 'Evil corp')->first()->id);
+    }
+
+    /** @test **/
+    public function it_makes_models_on_a_custom_connection()
+    {
+        $company = factory(Company::class)
+            ->connection('secondary')
+            ->make(['name' => 'Evil corp']);
+
+        $this->assertEquals('secondary', $company->getConnectionName());
     }
 
     /** @test **/

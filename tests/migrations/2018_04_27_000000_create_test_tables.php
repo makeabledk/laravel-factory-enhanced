@@ -10,6 +10,7 @@ class CreateTestTables extends Migration
      */
     public function up()
     {
+        // Primary
         Schema::create('companies', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('owner_id')->nullable();
@@ -45,6 +46,13 @@ class CreateTestTables extends Migration
         Schema::create('images', function (Blueprint $table) {
             $table->increments('id');
             $table->morphs('imageable');
+            $table->timestamps();
+        });
+
+        // Secondary
+        Schema::connection('secondary')->create('companies', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
             $table->timestamps();
         });
     }

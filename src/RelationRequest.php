@@ -199,26 +199,31 @@ class RelationRequest
 
         if (is_numeric($arg)) {
             $this->amount = $arg;
+
             return;
         }
 
         if (is_array($arg) && ! isset($arg[0])) {
             $this->attributes = $arg;
+
             return;
         }
 
         if (is_callable($arg) && ! is_string($arg)) {
             $this->builder = $arg;
+
             return;
         }
 
         if (is_string($arg) && $this->isValidRelation($arg)) {
             $this->path = $arg;
+
             return;
         }
 
         if (is_string($arg) && $this->stateManager->definitionExists($this->getRelatedClass(), $arg)) {
             $this->definition = $arg;
+
             return;
         }
 //
@@ -229,6 +234,7 @@ class RelationRequest
 
         if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
             $this->presets = array_merge($this->presets, Arr::wrap($arg));
+
             return;
         }
 
@@ -245,12 +251,12 @@ class RelationRequest
     {
         if (! $this->path) {
             throw new BadMethodCallException(
-                'No matching relations could be found on model [' . $this->class . ']. ' .
-                'Following possible relation names was checked: ' .
+                'No matching relations could be found on model ['.$this->class.']. '.
+                'Following possible relation names was checked: '.
                 (
                     ($testedRelations = $this->getPossiblyIntendedRelationships($args))->isEmpty()
                         ? '[NO POSSIBLE RELATION NAMES FOUND]'
-                        : '[' . $testedRelations->implode(', ') . ']'
+                        : '['.$testedRelations->implode(', ').']'
                 )
             );
         }
@@ -271,7 +277,7 @@ class RelationRequest
                 return is_string($arg) || is_null($arg);
             })
             ->map(function ($arg) {
-                return is_null($arg) ? "NULL" : "'".$arg."'";
+                return is_null($arg) ? 'NULL' : "'".$arg."'";
             });
     }
 }

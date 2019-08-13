@@ -122,7 +122,7 @@ class RelationsTest extends TestCase
     public function it_throws_a_bad_method_call_on_missing_relations()
     {
         $this->expectException(\BadMethodCallException::class);
-        $this->expectExceptionMessageRegExp("/invalidRelation/");
+        $this->expectExceptionMessageRegExp('/invalidRelation/');
         $this->factory(Company::class)->with(1, 'invalidRelation')->create();
     }
 

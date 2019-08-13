@@ -67,6 +67,7 @@ class RelationRequest
      * @var array
      */
     public $attributes = [];
+
     /**
      * @var StateManager
      */
@@ -86,15 +87,18 @@ class RelationRequest
 
         $this
             ->findAndPopRelationName($args)
-            ->tap(function () {
+            ->tap(function (Collection $args) {
                 // In case no matching relation found, be sure to give the
                 // developer a useful exception for debugging purposes.
                 if (! $this->path) {
+                    $testedRelations = $this->getPossiblyIntendedRelationships($args);
+
                     throw new BadMethodCallException(
-                        'Relation not found. Failed to locate any of the following strings as defined relations on model "'.get_class($this->model).'": '.
-                        ((count($this->states) > 0)
-                            ? str_replace('""', 'NULL', '"'.implode('", "', $this->states).'"')
-                            : '- NO POSSIBLE RELATION NAMES GIVEN -')
+                        'No matching relations could be found on model ['.get_class($this->model).']. '.
+                        'Following possible relation names was checked: '.
+                        ($testedRelations->isEmpty()
+                            ? '[NO POSSIBLE RELATION NAMES FOUND]'
+                            : '['.$testedRelations->implode(', ').']')
                     );
                 }
             })
@@ -249,5 +253,24 @@ class RelationRequest
         }
 
         return $presets;
+    }
+
+    /**
+     * Give the developer a readable list of possibly args
+     * that they might have intended could be a relation,
+     * but was invalid. Helpful for debugging purposes.
+     *
+     * @param Collection $args
+     * @return string
+     */
+    protected function getPossiblyIntendedRelationships(Collection $args)
+    {
+        return $args
+            ->filter(function ($arg) {
+                return is_string($arg) || is_null($arg);
+            })
+            ->map(function ($arg) {
+                return is_null($arg) ? "NULL" : "'".$arg."'";
+            });
     }
 }

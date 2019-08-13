@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Macroable;
+use InvalidArgumentException;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 use Makeable\LaravelFactory\Concerns\PrototypesModels;
@@ -17,20 +18,6 @@ class FactoryBuilder
         Macroable,
         NormalizesAttributes,
         PrototypesModels;
-
-    /**
-     * The Faker instance for the builder.
-     *
-     * @var \Faker\Generator
-     */
-    protected $faker;
-
-    /**
-     * The model states.
-     *
-     * @var StateManager
-     */
-    protected $stateManager;
 
     /**
      * The model being built.
@@ -47,18 +34,18 @@ class FactoryBuilder
     protected $connection;
 
     /**
-     * The model after making callbacks.
+     * The Faker instance for the builder.
      *
-     * @var array
+     * @var \Faker\Generator
      */
-    protected $afterMaking = [];
+    protected $faker;
 
     /**
-     * The model after creating callbacks.
+     * The model states.
      *
-     * @var array
+     * @var StateManager
      */
-    protected $afterCreating = [];
+    protected $stateManager;
 
     /**
      * Create an new builder instance.
@@ -73,8 +60,6 @@ class FactoryBuilder
         $this->class = $class;
         $this->faker = $faker;
         $this->stateManager = $stateManager;
-        $this->afterMaking = $stateManager->afterMaking;
-        $this->afterCreating = $stateManager->afterCreating;
     }
 
     /**
@@ -99,6 +84,10 @@ class FactoryBuilder
     public function definition($name)
     {
         $this->definition = $name;
+
+        if ($name !== 'default' && ! $this->stateManager->definitionExists($this->class, $name)) {
+            throw new InvalidArgumentException("Unable to locate factory with name [{$name}] on [{$this->class}].");
+        }
 
         return $this;
     }
@@ -171,11 +160,13 @@ class FactoryBuilder
      */
     public function presets($presets)
     {
-        $presets = is_array($presets) ? $presets : func_get_args();
+        collect(is_array($presets) ? $presets : func_get_args())->each(function ($preset) {
+            $callback = $this->stateManager->getPreset($this->class, $preset);
 
-        foreach ($presets as $preset) {
-            $this->tap($this->stateManager->getPreset($this->class, $preset));
-        }
+            throw_unless($callback, new InvalidArgumentException("Unable to locate preset with name [{$preset}] on [{$this->class}]."));
+
+            $this->tap($callback);
+        });
 
         return $this;
     }
@@ -200,6 +191,13 @@ class FactoryBuilder
     public function states($states)
     {
         $this->states = is_array($states) ? $states : func_get_args();
+
+        foreach ($this->states as $state) {
+            if (! $this->stateManager->statesExists($this->class, $state) &&
+                ! $this->stateManager->afterCallbackExists($this->class, $state)) {
+                throw new InvalidArgumentException("Unable to locate state with name [{$state}] on [{$this->class}].");
+            }
+        }
 
         return $this;
     }
@@ -410,10 +408,10 @@ class FactoryBuilder
     protected function getRawAttributes(array $attributes = [])
     {
         return collect($this->stateManager->getDefinition($this->class, $this->definition))
-            ->concat($this->attributes)
             ->concat(collect($this->states)->filter()->map(function ($state) {
                 return $this->stateManager->getState($this->class, $state);
             }))
+            ->concat(collect($this->attributes))
             ->push($this->wrapCallable($attributes))
             ->pipe(function ($callables) use ($attributes) {
                 return $this->mergeAndExpandAttributes($callables, $attributes);
@@ -421,8 +419,8 @@ class FactoryBuilder
     }
 
     /**
-     * Run attribute closures, merge resulting attributes
-     * and finally expand to their underlying values.
+     * Run attribute closures, merge resulting attributes, and
+     * finally expand to their underlying values.
      *
      * @param Collection|array $attributes
      * @param array $inlineAttributes
@@ -469,7 +467,7 @@ class FactoryBuilder
      */
     protected function callAfterMaking($model)
     {
-        $this->callAfter($this->afterMaking, $model);
+        $this->callAfter($this->stateManager->afterMaking, $model);
     }
 
     /**
@@ -479,7 +477,7 @@ class FactoryBuilder
      */
     protected function callAfterCreating($model)
     {
-        $this->callAfter($this->afterCreating, $model);
+        $this->callAfter($this->stateManager->afterCreating, $model);
     }
 
     /**

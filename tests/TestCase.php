@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\FactoryServiceProvider;
+use Makeable\LaravelFactory\StateManager;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
@@ -40,6 +41,8 @@ class TestCase extends BaseTestCase
             'database' => ':memory:',
             'prefix' => '',
         ]);
+
+        $app->singleton(StateManager::class);
 
         // Make tests faster!
         Hash::setRounds(4);

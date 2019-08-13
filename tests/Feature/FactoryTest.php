@@ -6,8 +6,10 @@ use App\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Makeable\LaravelFactory\StateManager;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
+use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\TestCase;
 
 class FactoryTest extends TestCase
@@ -88,6 +90,23 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(Collection::class,
             $this->factory(User::class)->tap($createTwice)->create()
         );
+    }
+
+    /** @test **/
+    public function it_executes_defined_after_callbacks()
+    {
+        $this->factory()->afterMaking(Department::class, function ($department) {
+            $department->forceFill(['active' => 1]);
+        });
+        $this->factory()->afterCreating(Department::class, function ($department) {
+            $department->forceFill(['flagship' => 1]);
+        });
+
+        $this->assertEquals(1, ($made = $this->factory(Department::class)->make())->active);
+        $this->assertEquals(0, $made->flagship);
+
+        $this->assertEquals(1, ($created = $this->factory(Department::class)->create())->active);
+        $this->assertEquals(1, $created->flagship);
     }
 
     /** @test **/

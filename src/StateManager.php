@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory;
 
 use Closure;
-use InvalidArgumentException;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 
 class StateManager
@@ -137,13 +136,7 @@ class StateManager
      */
     public function getPreset($class, $preset)
     {
-        $builder = data_get($this->presets, "{$class}.{$preset}");
-
-        if (! $builder) {
-            throw new InvalidArgumentException("Unable to locate [{$preset}] preset for [{$class}].");
-        }
-
-        return $builder;
+        return data_get($this->presets, "{$class}.{$preset}");
     }
 
     /**
@@ -184,14 +177,7 @@ class StateManager
      */
     public function getState($class, $state)
     {
-        $builder = data_get($this->states, "{$class}.{$state}");
-
-        // TODO fix inconsistency with Laravel - need to check if after-callback exists
-        if (! $builder) {
-            throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
-        }
-
-        return $builder;
+        return data_get($this->states, "{$class}.{$state}");
     }
 
     /**
@@ -222,5 +208,18 @@ class StateManager
         $this->afterCreating[$class][$name][] = $callback;
 
         return $this;
+    }
+
+    /**
+     * Determine if a callback exists on a given model.
+     *
+     * @param string $class
+     * @param string $name
+     * @return bool
+     */
+    public function afterCallbackExists($class, $name)
+    {
+        return isset($this->stateManager->afterMaking[$class][$name]) ||
+               isset($this->stateManager->afterCreating[$class][$name]);
     }
 }

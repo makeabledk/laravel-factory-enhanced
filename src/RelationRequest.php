@@ -226,11 +226,6 @@ class RelationRequest
 
             return;
         }
-//
-//        if ($this->stateManager->stateExists($this->class, $arg)) {
-//            $this->states = array_merge($this->states, Arr::wrap($arg));
-//            return;
-//        }
 
         if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
             $this->presets = array_merge($this->presets, Arr::wrap($arg));

@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory;
 
 use Closure;
-use InvalidArgumentException;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 
 class StateManager
@@ -18,6 +17,13 @@ class StateManager
     protected $definitions = [];
 
     /**
+     * The registered model presets.
+     *
+     * @var array
+     */
+    protected $presets = [];
+
+    /**
      * The registered model states.
      *
      * @var array
@@ -29,19 +35,14 @@ class StateManager
      *
      * @var array
      */
-    protected $afterMaking = [];
+    public $afterMaking = [];
 
     /**
      * The registered after creating callbacks.
      *
      * @var array
      */
-    protected $afterCreating = [];
-
-    /**
-     * @var array
-     */
-    protected $stateProviders = [];
+    public $afterCreating = [];
 
     /**
      * Define a class with a given short-name.
@@ -59,15 +60,22 @@ class StateManager
     }
 
     /**
+     * Check if a definition exists.
+     *
      * @param $class
+     * @param null $name
      * @return bool
      */
-    public function definitionExists($class)
+    public function definitionExists($class, $name = null)
     {
-        return isset($this->definitions[$class]);
+        return is_null($name)
+            ? isset($this->definitions[$class])
+            : isset($this->definitions[$class][$name]);
     }
 
     /**
+     * Delete an existing definition.
+     *
      * @param $class
      * @return $this
      */
@@ -79,6 +87,8 @@ class StateManager
     }
 
     /**
+     * Get a definition.
+     *
      * @param $class
      * @param $name
      * @return Closure
@@ -86,6 +96,47 @@ class StateManager
     public function getDefinition($class, $name)
     {
         return data_get($this->definitions, "{$class}.{$name}") ?: $this->wrapCallable([]);
+    }
+
+    /**
+     * Define a preset that may later be used to configure a factory.
+     *
+     * @param  string  $class
+     * @param  string  $preset
+     * @param  callable|array  $builder
+     * @return $this
+     */
+    public function preset($class, $preset, $builder)
+    {
+        $this->presets[$class][$preset] = $this->wrapCallable($builder);
+
+        return $this;
+    }
+
+    /**
+     * Check if presets exists.
+     *
+     * @param $class
+     * @param $presets
+     * @return bool
+     */
+    public function presetsExists($class, $presets)
+    {
+        return collect($presets)->reject(function ($preset) use ($class) {
+            return data_get($this->presets, "{$class}.{$preset}") !== null;
+        })->isEmpty();
+    }
+
+    /**
+     * Get a preset.
+     *
+     * @param $class
+     * @param $preset
+     * @return Closure
+     */
+    public function getPreset($class, $preset)
+    {
+        return data_get($this->presets, "{$class}.{$preset}");
     }
 
     /**
@@ -104,34 +155,34 @@ class StateManager
     }
 
     /**
+     * Check if states exists.
+     *
      * @param $class
      * @param $states
-     * @return array
+     * @return bool
      */
-    public function getStates($class, $states)
+    public function statesExists($class, $states)
     {
-        return array_map(function ($state) use ($class) {
-            return $this->getState($class, $state);
-        }, $states);
+        return collect($states)->reject(function ($states) use ($class) {
+            return data_get($this->states, "{$class}.{$states}") !== null;
+        })->isEmpty();
     }
 
     /**
+     * Get a state.
+     *
      * @param $class
      * @param $state
-     * @return mixed
+     * @return Closure
      */
     public function getState($class, $state)
     {
-        $builder = data_get($this->states, "{$class}.{$state}");
-
-        if (! $builder) {
-            throw new InvalidArgumentException("Unable to locate [{$state}] state for [{$class}].");
-        }
-
-        return $builder;
+        return data_get($this->states, "{$class}.{$state}");
     }
 
     /**
+     * Define a callback to run after making a model.
+     *
      * @param $class
      * @param $name
      * @param callable $callback
@@ -145,16 +196,8 @@ class StateManager
     }
 
     /**
-     * @param $class
-     * @param $state
-     * @return array
-     */
-    public function getAfterMakingCallbacks($class, $state)
-    {
-        return data_get($this->afterMaking, "{$class}.{$state}", []);
-    }
-
-    /**
+     * Define a callback to run after creating a model.
+     *
      * @param $class
      * @param $name
      * @param callable $callback
@@ -168,23 +211,15 @@ class StateManager
     }
 
     /**
-     * @param $class
-     * @param $state
-     * @return array
+     * Determine if a callback exists on a given model.
+     *
+     * @param string $class
+     * @param string $name
+     * @return bool
      */
-    public function getAfterCreatingCallbacks($class, $state)
+    public function afterCallbackExists($class, $name)
     {
-        return data_get($this->afterCreating, "{$class}.{$state}", []);
-    }
-
-    /**
-     * @param $provider
-     * @return $this
-     */
-    public function provider($provider)
-    {
-        $this->stateProviders[] = $provider;
-
-        return $this;
+        return isset($this->stateManager->afterMaking[$class][$name]) ||
+               isset($this->stateManager->afterCreating[$class][$name]);
     }
 }

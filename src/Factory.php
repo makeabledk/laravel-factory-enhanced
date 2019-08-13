@@ -18,18 +18,18 @@ class Factory implements ArrayAccess
     /**
      * @var StateManager
      */
-    protected $states;
+    protected $stateManager;
 
     /**
      * Create a new factory instance.
      *
      * @param  \Faker\Generator $faker
-     * @param StateManager $states
+     * @param StateManager $stateManager
      */
-    public function __construct(Faker $faker, StateManager $states)
+    public function __construct(Faker $faker, StateManager $stateManager)
     {
         $this->faker = $faker;
-        $this->states = $states;
+        $this->stateManager = $stateManager;
     }
 
     /**
@@ -69,7 +69,22 @@ class Factory implements ArrayAccess
      */
     public function define($class, callable $attributes, $name = 'default')
     {
-        $this->states->define($class, $name, $attributes);
+        $this->stateManager->define($class, $name, $attributes);
+
+        return $this;
+    }
+
+    /**
+     * Define a preset with a callable.
+     *
+     * @param string $class
+     * @param string $state
+     * @param callable $callable
+     * @return $this
+     */
+    public function preset($class, $state, callable $callable)
+    {
+        $this->stateManager->preset($class, $state, $callable);
 
         return $this;
     }
@@ -84,7 +99,7 @@ class Factory implements ArrayAccess
      */
     public function state($class, $state, $attributes)
     {
-        $this->states->state($class, $state, $attributes);
+        $this->stateManager->state($class, $state, $attributes);
 
         return $this;
     }
@@ -99,7 +114,7 @@ class Factory implements ArrayAccess
      */
     public function afterMaking($class, callable $callback, $name = 'default')
     {
-        $this->states->afterMaking($class, $name, $callback);
+        $this->stateManager->afterMaking($class, $name, $callback);
 
         return $this;
     }
@@ -114,7 +129,7 @@ class Factory implements ArrayAccess
      */
     public function afterMakingState($class, $state, callable $callback)
     {
-        $this->states->afterMaking($class, $state, $callback);
+        $this->stateManager->afterMaking($class, $state, $callback);
 
         return $this;
     }
@@ -129,7 +144,7 @@ class Factory implements ArrayAccess
      */
     public function afterCreating($class, callable $callback, $name = 'default')
     {
-        $this->states->afterCreating($class, $name, $callback);
+        $this->stateManager->afterCreating($class, $name, $callback);
 
         return $this;
     }
@@ -144,7 +159,7 @@ class Factory implements ArrayAccess
      */
     public function afterCreatingState($class, $state, callable $callback)
     {
-        $this->states->afterCreating($class, $state, $callback);
+        $this->stateManager->afterCreating($class, $state, $callback);
 
         return $this;
     }
@@ -223,7 +238,7 @@ class Factory implements ArrayAccess
     public function raw($class, array $attributes = [], $name = 'default')
     {
         return array_merge(
-            call_user_func($this->states->getDefinition($class, $name), $this->faker), $attributes
+            call_user_func($this->stateManager->getDefinition($class, $name), $this->faker), $attributes
         );
     }
 
@@ -236,7 +251,7 @@ class Factory implements ArrayAccess
      */
     public function of($class, $name = 'default')
     {
-        return new FactoryBuilder($class, $name, $this->states, $this->faker);
+        return tap(new FactoryBuilder($class, $this->stateManager, $this->faker))->definition($name);
     }
 
     /**
@@ -266,7 +281,7 @@ class Factory implements ArrayAccess
      */
     public function offsetExists($offset)
     {
-        return $this->states->definitionExists($offset);
+        return $this->stateManager->definitionExists($offset);
     }
 
     /**
@@ -300,6 +315,6 @@ class Factory implements ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        $this->states->forgetDefinitions($offset);
+        $this->stateManager->forgetDefinitions($offset);
     }
 }

@@ -16,7 +16,7 @@ use Makeable\LaravelFactory\RelationRequest;
 trait BuildsRelationships
 {
     /**
-     * The current batch index.
+     * The current batch no.
      *
      * @var int
      */
@@ -39,24 +39,23 @@ trait BuildsRelationships
     {
         $factory = $this->buildFactoryForRequest($request);
 
-        // Recursively create factories until no further nesting
+        // Recursively create factories until no further nesting.
         if ($request->hasNesting()) {
             $factory->with($request->createNestedRequest());
         }
 
-        // Apply the request onto the newly created factory
+        // Apply the request onto the newly created factory.
         else {
             $factory
                 ->fill($request->attributes)
-                ->states($request->states);
-
-            if ($request->amount) {
-                $factory->times($request->amount);
-            }
-
-            if ($request->builder) {
-                call_user_func($request->builder, $factory);
-            }
+                ->presets($request->presets)
+                ->states($request->states)
+                ->when($request->amount, function ($factory, $amount) {
+                    $factory->times($amount);
+                })
+                ->when($request->builder, function ($factory, $builder) {
+                    $factory->tap($builder);
+                });
         }
 
         return $this;
@@ -71,7 +70,7 @@ trait BuildsRelationships
     protected function buildFactoryForRequest($request)
     {
         $relation = $request->getRelationName();
-        $batch = $request->batch;
+        $batch = $request->getBatch();
 
         return data_get($this->relations, "{$relation}.{$batch}", function () use ($request, $relation, $batch) {
             return tap(app(Factory::class)->of($request->getRelatedClass()), function ($factory) use ($relation, $batch) {
@@ -91,7 +90,7 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsTo::class))
             ->each(function ($batches, $relation) use ($child) {
                 foreach (array_slice($batches, 0, 1) as $factory) {
-                    $parent = $this->collectModel($factory->create());
+                    $parent = $this->collectModel($factory->inheritConnection($this)->create());
                     $child->$relation()->associate($parent);
                 }
             });
@@ -108,7 +107,7 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsToMany::class))
             ->each(function ($batches, $relation) use ($sibling) {
                 foreach ($batches as $factory) {
-                    $models = $this->collect($factory->create());
+                    $models = $this->collect($factory->inheritConnection($this)->create());
                     $models->each(function ($model) use ($sibling, $relation, $factory) {
                         $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
                     });
@@ -127,7 +126,7 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(HasOneOrMany::class))
             ->each(function ($batches, $relation) use ($parent) {
                 foreach ($batches as $factory) {
-                    // In case of morph-one / morph-many we'll need to set the morph type as well
+                    // In case of morphOne / morphMany we'll need to set the morph type as well.
                     if (($morphRelation = $this->newRelation($relation)) instanceof MorphOneOrMany) {
                         $factory->fill([
                             $morphRelation->getMorphType() => (new $this->class)->getMorphClass(),

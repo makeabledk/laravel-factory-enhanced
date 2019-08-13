@@ -5,7 +5,7 @@ namespace Makeable\LaravelFactory\Tests\Stubs;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Division extends Model
+class Department extends Model
 {
     public function employees()
     {

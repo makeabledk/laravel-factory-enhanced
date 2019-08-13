@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory;
 
 use Closure;
-use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 

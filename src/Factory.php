@@ -251,7 +251,7 @@ class Factory implements ArrayAccess
      */
     public function of($class, $name = 'default')
     {
-        return new FactoryBuilder($class, $name, $this->states, $this->faker);
+        return tap(new FactoryBuilder($class, $this->states, $this->faker))->definition($name);
     }
 
     /**

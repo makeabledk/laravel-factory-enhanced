@@ -9,12 +9,14 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Macroable;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
+use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class FactoryBuilder
 {
     use BuildsRelationships,
+        Macroable,
         NormalizesAttributes,
-        Macroable;
+        PrototypesModels;
 
     /**
      * The Faker instance for the builder.
@@ -31,20 +33,6 @@ class FactoryBuilder
     protected $stateManager;
 
     /**
-     * The database connection on which the model instance should be persisted.
-     *
-     * @var string
-     */
-    protected $connection;
-
-    /**
-     * Name of the definition.
-     *
-     * @var string
-     */
-    protected $name;
-
-    /**
      * The model being built.
      *
      * @var string
@@ -52,32 +40,11 @@ class FactoryBuilder
     protected $class;
 
     /**
-     * The number of models to build.
+     * The database connection on which the model instance should be persisted.
      *
-     * @var int | null
+     * @var string
      */
-    protected $amount;
-
-    /**
-     * The states to apply.
-     *
-     * @var array
-     */
-    protected $states = [];
-
-    /**
-     * Attributes to apply.
-     *
-     * @var array
-     */
-    protected $attributes = [];
-
-    /**
-     * Attributes to apply to a pivot relation.
-     *
-     * @var array
-     */
-    protected $pivotAttributes = [];
+    protected $connection;
 
     /**
      * The model after making callbacks.
@@ -97,15 +64,13 @@ class FactoryBuilder
      * Create an new builder instance.
      *
      * @param  string  $class
-     * @param  string  $name
      * @param  StateManager $stateManager
      * @param  \Faker\Generator  $faker
      * @return void
      */
-    public function __construct($class, $name, StateManager $stateManager, Faker $faker)
+    public function __construct($class, StateManager $stateManager, Faker $faker)
     {
         $this->class = $class;
-        $this->name = $name;
         $this->faker = $faker;
         $this->stateManager = $stateManager;
         $this->afterMaking = $stateManager->afterMaking;
@@ -121,6 +86,19 @@ class FactoryBuilder
     public function connection($name)
     {
         $this->connection = $name;
+
+        return $this;
+    }
+
+    /**
+     * Set the name of definition to be used.
+     *
+     * @param $name
+     * @return $this
+     */
+    public function definition($name)
+    {
+        $this->definition = $name;
 
         return $this;
     }
@@ -431,7 +409,7 @@ class FactoryBuilder
      */
     protected function getRawAttributes(array $attributes = [])
     {
-        return collect($this->stateManager->getDefinition($this->class, $this->name))
+        return collect($this->stateManager->getDefinition($this->class, $this->definition))
             ->concat($this->attributes)
             ->concat(collect($this->states)->filter()->map(function ($state) {
                 return $this->stateManager->getState($this->class, $state);
@@ -513,7 +491,7 @@ class FactoryBuilder
      */
     protected function callAfter(array $afterCallbacks, $model)
     {
-        $states = array_merge([$this->name], $this->states);
+        $states = array_merge([$this->definition], $this->states);
 
         foreach ($states as $state) {
             $callbacks = data_get($afterCallbacks, "{$this->class}.{$state}", []);

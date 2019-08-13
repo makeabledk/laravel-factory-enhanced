@@ -3,6 +3,7 @@
 namespace Makeable\LaravelFactory;
 
 use Closure;
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 
@@ -64,11 +65,14 @@ class StateManager
      * Check if a definition exists.
      *
      * @param $class
+     * @param null $name
      * @return bool
      */
-    public function definitionExists($class)
+    public function definitionExists($class, $name = null)
     {
-        return isset($this->definitions[$class]);
+        return is_null($name)
+            ? isset($this->definitions[$class])
+            : isset($this->definitions[$class][$name]);
     }
 
     /**
@@ -112,15 +116,17 @@ class StateManager
     }
 
     /**
-     * Check if a preset exists.
+     * Check if presets exists.
      *
      * @param $class
-     * @param $preset
+     * @param $presets
      * @return bool
      */
-    public function presetExists($class, $preset)
+    public function presetsExists($class, $presets)
     {
-        return data_get($this->presets, "{$class}.{$preset}") !== null;
+        return collect($presets)->reject(function ($preset) use ($class) {
+            return data_get($this->presets, "{$class}.{$preset}") !== null;
+        })->isEmpty();
     }
 
     /**
@@ -154,6 +160,20 @@ class StateManager
         $this->states[$class][$state] = $this->wrapCallable($builder);
 
         return $this;
+    }
+
+    /**
+     * Check if states exists.
+     *
+     * @param $class
+     * @param $states
+     * @return bool
+     */
+    public function statesExists($class, $states)
+    {
+        return collect($states)->reject(function ($states) use ($class) {
+            return data_get($this->states, "{$class}.{$states}") !== null;
+        })->isEmpty();
     }
 
     /**

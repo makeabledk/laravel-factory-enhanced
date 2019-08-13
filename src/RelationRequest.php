@@ -9,22 +9,35 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
+    use PrototypesModels;
+
     /**
      * The parent model requesting relations.
      *
      * @var Model
      */
-    protected $model;
+    protected $class;
 
     /**
      * The batch number.
      *
      * @var int
      */
-    public $batch;
+    protected $batch;
+
+    /**
+     * @var StateManager
+     */
+    protected $stateManager;
+
+    /**
+     * @var string|null
+     */
+    protected $cachedRelatedClass;
 
     /**
      * The (possibly nested) relations path.
@@ -34,44 +47,11 @@ class RelationRequest
     public $path;
 
     /**
-     * The number of related models to build.
-     *
-     * @var int|null
-     */
-    public $amount;
-
-    /**
-     * The presets to apply.
-     *
-     * @var array
-     */
-    public $presets = [];
-
-    /**
-     * The states to apply.
-     *
-     * @var array
-     */
-    public $states = [];
-
-    /**
-     * A build function.
+     * The build function.
      *
      * @var callable | null
      */
     public $builder = null;
-
-    /**
-     * Attributes to apply.
-     *
-     * @var array
-     */
-    public $attributes = [];
-
-    /**
-     * @var StateManager
-     */
-    protected $stateManager;
 
     /**
      * Create a new relationship request.
@@ -83,25 +63,11 @@ class RelationRequest
      */
     public function __construct($class, $batch, StateManager $stateManager, $args)
     {
-        [$this->model, $this->batch, $this->stateManager] = [new $class, $batch, $stateManager];
+        [$this->class, $this->batch, $this->stateManager] = [$class, $batch, $stateManager];
 
-        $this
-            ->findAndPopRelationName($args)
-            ->tap(function (Collection $args) {
-                // In case no matching relation found, be sure to give the
-                // developer a useful exception for debugging purposes.
-                if (! $this->path) {
-                    $testedRelations = $this->getPossiblyIntendedRelationships($args);
-
-                    throw new BadMethodCallException(
-                        'No matching relations could be found on model ['.get_class($this->model).']. '.
-                        'Following possible relation names was checked: '.
-                        ($testedRelations->isEmpty()
-                            ? '[NO POSSIBLE RELATION NAMES FOUND]'
-                            : '['.$testedRelations->implode(', ').']')
-                    );
-                }
-            })
+        collect($args)
+            ->pipe(Closure::fromCallable([$this, 'findAndPopRelationName']))
+            ->tap(Closure::fromCallable([$this, 'failOnMissingRelation']))
             ->each(Closure::fromCallable([$this, 'parseArgument']));
     }
 
@@ -119,6 +85,14 @@ class RelationRequest
         $request->states = $this->states;
 
         return $request;
+    }
+
+    /**
+     * @return int
+     */
+    public function getBatch()
+    {
+        return $this->batch;
     }
 
     /**
@@ -145,7 +119,8 @@ class RelationRequest
     {
         $relation = $this->getRelationName();
 
-        return get_class($this->model->$relation()->getRelated());
+        return $this->cachedRelatedClass = $this->cachedRelatedClass
+            ?: get_class($this->model()->$relation()->getRelated());
     }
 
     /**
@@ -174,12 +149,12 @@ class RelationRequest
     /**
      * Loop through arguments to detect a relation name.
      *
-     * @param mixed $args
+     * @param Collection $args
      * @return Collection
      */
-    protected function findAndPopRelationName($args)
+    protected function findAndPopRelationName(Collection $args)
     {
-        return collect($args)->reject(function ($arg) {
+        return $args->reject(function ($arg) {
             if ($match = (is_string($arg) && $this->isValidRelation($arg))) {
                 $this->path = $arg;
             }
@@ -196,36 +171,65 @@ class RelationRequest
      */
     protected function isValidRelation($path)
     {
+        $model = $this->model();
         $relation = $this->getRelationName($path);
 
-        return method_exists($this->model, $relation) && $this->model->$relation() instanceof Relation;
+        return method_exists($model, $relation) && $model->$relation() instanceof Relation;
+    }
+
+    /**
+     * @return Model
+     */
+    protected function model()
+    {
+        return new $this->class;
     }
 
     /**
      * Parse each individual argument given to 'with'.
      *
      * @param mixed $arg
+     * @return void
      */
     protected function parseArgument($arg)
     {
+        if (is_null($arg)) {
+            return;
+        }
+
         if (is_numeric($arg)) {
-            return $this->amount = $arg;
+            $this->amount = $arg;
+            return;
         }
 
         if (is_array($arg) && ! isset($arg[0])) {
-            return $this->attributes = $arg;
+            $this->attributes = $arg;
+            return;
         }
 
         if (is_callable($arg) && ! is_string($arg)) {
-            return $this->builder = $arg;
+            $this->builder = $arg;
+            return;
         }
 
         if (is_string($arg) && $this->isValidRelation($arg)) {
-            return $this->path = $arg;
+            $this->path = $arg;
+            return;
         }
 
-        if ($presets = $this->parsePresets($arg)) {
-            return $this->presets = $presets;
+        if (is_string($arg) && $this->stateManager->definitionExists($this->getRelatedClass(), $arg)) {
+            $this->definition = $arg;
+            return;
+        }
+//
+//        if ($this->stateManager->stateExists($this->class, $arg)) {
+//            $this->states = array_merge($this->states, Arr::wrap($arg));
+//            return;
+//        }
+
+        if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
+            $this->presets = array_merge($this->presets, Arr::wrap($arg));
+            return;
         }
 
         // If nothing else, we'll assume $arg represent some state.
@@ -233,26 +237,23 @@ class RelationRequest
     }
 
     /**
-     * Attempt to parse argument as one or more presets.
+     * Fail build with a readable exception message.
      *
-     * @param $presets
-     * @return array|bool
+     * @param Collection $args
      */
-    protected function parsePresets($presets)
+    protected function failOnMissingRelation(Collection $args)
     {
-        if (! is_string($presets) || is_array($presets)) {
-            return false;
+        if (! $this->path) {
+            throw new BadMethodCallException(
+                'No matching relations could be found on model [' . $this->class . ']. ' .
+                'Following possible relation names was checked: ' .
+                (
+                    ($testedRelations = $this->getPossiblyIntendedRelationships($args))->isEmpty()
+                        ? '[NO POSSIBLE RELATION NAMES FOUND]'
+                        : '[' . $testedRelations->implode(', ') . ']'
+                )
+            );
         }
-
-        $presets = Arr::wrap($presets);
-
-        foreach ($presets as $preset) {
-            if (! $this->stateManager->presetExists($this->getRelatedClass(), $preset)) {
-                return false;
-            }
-        }
-
-        return $presets;
     }
 
     /**

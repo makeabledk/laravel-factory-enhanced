@@ -70,7 +70,7 @@ trait BuildsRelationships
     protected function buildFactoryForRequest($request)
     {
         $relation = $request->getRelationName();
-        $batch = $request->batch;
+        $batch = $request->getBatch();
 
         return data_get($this->relations, "{$relation}.{$batch}", function () use ($request, $relation, $batch) {
             return tap(app(Factory::class)->of($request->getRelatedClass()), function ($factory) use ($relation, $batch) {

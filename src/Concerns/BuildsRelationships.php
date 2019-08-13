@@ -90,10 +90,7 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsTo::class))
             ->each(function ($batches, $relation) use ($child) {
                 foreach (array_slice($batches, 0, 1) as $factory) {
-                    // TODO - consider connections here
-                    // $factory->inheritConnection($this);
-
-                    $parent = $this->collectModel($factory->create());
+                    $parent = $this->collectModel($factory->inheritConnection($this)->create());
                     $child->$relation()->associate($parent);
                 }
             });
@@ -110,10 +107,7 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsToMany::class))
             ->each(function ($batches, $relation) use ($sibling) {
                 foreach ($batches as $factory) {
-                    // TODO - consider connections here
-                    // $factory->inheritConnection($this);
-
-                    $models = $this->collect($factory->create());
+                    $models = $this->collect($factory->inheritConnection($this)->create());
                     $models->each(function ($model) use ($sibling, $relation, $factory) {
                         $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
                     });

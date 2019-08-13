@@ -76,6 +76,23 @@ class RelationsTest extends TestCase
     // FUNCTIONALITY AND BEHAVIOR
 
     /** @test **/
+    public function it_creates_related_models_on_the_same_connection()
+    {
+        factory(Company::class)
+            ->connection('secondary')
+            ->with('owner') // belongs-to
+            ->with(1, 'departments') // has-many
+            ->with(1, 'departments.employees') // belongs-to-many
+            ->create();
+
+        $company = Company::on('secondary')->with('owner', 'departments.employees')->latest()->first();
+
+        $this->assertInstanceOf(User::class, $company->owner);
+        $this->assertEquals(1, $company->departments->count());
+        $this->assertEquals(1, $company->departments->first()->employees->count());
+    }
+
+    /** @test **/
     public function the_same_relation_can_be_created_multiple_times_using_andWith()
     {
         $company = $this->factory(Company::class)

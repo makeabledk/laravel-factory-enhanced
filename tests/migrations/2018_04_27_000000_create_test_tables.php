@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateTestTables extends Migration
 {
@@ -10,22 +11,27 @@ class CreateTestTables extends Migration
      */
     public function up()
     {
-        // Primary
-        Schema::create('companies', function (Blueprint $table) {
+        $this->createTables('primary');
+        $this->createTables('secondary');
+    }
+
+    protected function createTables($connection)
+    {
+        Schema::connection($connection)->create('companies', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('owner_id')->nullable();
             $table->string('name');
             $table->timestamps();
         });
 
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::connection($connection)->create('customers', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('company_id')->nullable();
             $table->integer('satisfaction')->nullable();
             $table->timestamps();
         });
 
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::connection($connection)->create('departments', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('company_id')->nullable();
             $table->unsignedInteger('manager_id')->nullable();
@@ -35,7 +41,7 @@ class CreateTestTables extends Migration
             $table->timestamps();
         });
 
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::connection($connection)->create('employees', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('department_id');
             $table->unsignedInteger('user_id');
@@ -43,16 +49,19 @@ class CreateTestTables extends Migration
             $table->timestamps();
         });
 
-        Schema::create('images', function (Blueprint $table) {
+        Schema::connection($connection)->create('images', function (Blueprint $table) {
             $table->increments('id');
             $table->morphs('imageable');
             $table->timestamps();
         });
 
-        // Secondary
-        Schema::connection('secondary')->create('companies', function (Blueprint $table) {
+        Schema::connection($connection)->dropIfExists('users');
+        Schema::connection($connection)->create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->rememberToken();
             $table->timestamps();
         });
     }

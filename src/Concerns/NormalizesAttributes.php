@@ -9,10 +9,10 @@ trait NormalizesAttributes
     /**
      * Ensure a query result is returned as a collection.
      *
-     * @param $result
+     * @param mixed $result
      * @return \Illuminate\Support\Collection
      */
-    protected function collect($result)
+    protected function collect($result = null)
     {
         if ($result instanceof Model) {
             $result = [$result];

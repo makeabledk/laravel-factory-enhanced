@@ -161,13 +161,13 @@ class FactoryBuilder
      */
     public function presets($presets)
     {
-        collect(is_array($presets) ? $presets : func_get_args())->each(function ($preset) {
-            $callback = $this->stateManager->getPreset($this->class, $preset);
+        $this->presets = is_array($presets) ? $presets : func_get_args();
 
-            throw_unless($callback, new InvalidArgumentException("Unable to locate preset with name [{$preset}] on [{$this->class}]."));
-
-            $this->tap($callback);
-        });
+        foreach ($this->presets as $preset) {
+            if (! $this->stateManager->presetsExists($this->class, $preset)) {
+                throw new InvalidArgumentException("Unable to locate preset with name [{$preset}] on [{$this->class}].");
+            }
+        }
 
         return $this;
     }
@@ -408,15 +408,28 @@ class FactoryBuilder
      */
     protected function getRawAttributes(array $attributes = [])
     {
-        return collect($this->stateManager->getDefinition($this->class, $this->definition))
+        $this->applyPresets();
+
+        return collect([$this->stateManager->getDefinition($this->class, $this->definition)])
             ->concat(collect($this->states)->filter()->map(function ($state) {
                 return $this->stateManager->getState($this->class, $state) ?: $this->wrapCallable([]);
             }))
-            ->concat(collect($this->attributes))
+            ->concat($this->attributes)
             ->push($this->wrapCallable($attributes))
             ->pipe(function ($callables) use ($attributes) {
                 return $this->mergeAndExpandAttributes($callables, $attributes);
             });
+    }
+
+    protected function applyPresets()
+    {
+        collect($this->presets)->each(function ($preset) {
+            $this->tap($this->stateManager->getPreset($this->class, $preset));
+        });
+
+        $this->presets = [];
+
+        return $this;
     }
 
     /**

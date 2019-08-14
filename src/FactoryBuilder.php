@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory;
 
+use Closure;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -281,7 +282,7 @@ class FactoryBuilder
      * Create a model and persist it in the database if requested.
      *
      * @param  array  $attributes
-     * @return \Closure
+     * @return Closure
      */
     public function lazy(array $attributes = [])
     {
@@ -409,7 +410,7 @@ class FactoryBuilder
     {
         return collect($this->stateManager->getDefinition($this->class, $this->definition))
             ->concat(collect($this->states)->filter()->map(function ($state) {
-                return $this->stateManager->getState($this->class, $state);
+                return $this->stateManager->getState($this->class, $state) ?: $this->wrapCallable([]);
             }))
             ->concat(collect($this->attributes))
             ->push($this->wrapCallable($attributes))
@@ -443,17 +444,17 @@ class FactoryBuilder
      */
     protected function expandAttributes(array $attributes)
     {
-        foreach ($attributes as &$attribute) {
-            if (is_callable($attribute) && ! is_string($attribute)) {
-                $attribute = $attribute($attributes);
+        foreach ($attributes as $key => $attribute) {
+            if ($attribute instanceof Closure) {
+                $attributes[$key] = $attribute($attributes);
             }
 
             if ($attribute instanceof static) {
-                $attribute = $attribute->create()->getKey();
+                $attributes[$key] = $attribute->create()->getKey();
             }
 
             if ($attribute instanceof Model) {
-                $attribute = $attribute->getKey();
+                $attributes[$key] = $attribute->getKey();
             }
         }
 

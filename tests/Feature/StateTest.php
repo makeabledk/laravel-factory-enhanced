@@ -5,8 +5,10 @@ namespace Makeable\LaravelFactory\Tests\Feature;
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
+use Makeable\LaravelFactory\StateManager;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
+use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\TestCase;
 
 class StateTest extends TestCase
@@ -62,19 +64,6 @@ class StateTest extends TestCase
     }
 
     /** @test **/
-    public function regression_states_works_with_nested_relations()
-    {
-        $company = $this->factory(Company::class)
-            ->with(1, 'active', 'departments')
-            ->with(2, 'departments.employees')
-            ->create();
-
-        $this->assertEquals(1, $company->departments->count());
-        $this->assertEquals(2, $company->departments->first()->employees->count());
-        $this->assertEquals(1, $company->departments->first()->active);
-    }
-
-    /** @test **/
     public function it_can_apply_a_preset()
     {
         $company = $this->factory(Company::class)->preset('startup')->create();
@@ -93,5 +82,18 @@ class StateTest extends TestCase
         $this->assertEquals(1, $company->departments->count());
         $this->assertEquals(4, $company->departments->first()->employees->count());
         $this->assertInstanceOf(User::class, $company->departments->first()->manager);
+    }
+
+    /** @test **/
+    public function regression_states_works_with_nested_relations()
+    {
+        $company = $this->factory(Company::class)
+            ->with(1, 'active', 'departments')
+            ->with(2, 'departments.employees')
+            ->create();
+
+        $this->assertEquals(1, $company->departments->count());
+        $this->assertEquals(2, $company->departments->first()->employees->count());
+        $this->assertEquals(1, $company->departments->first()->active);
     }
 }

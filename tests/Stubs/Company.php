@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Company extends Model
 {
+    protected $casts = [
+        'tags' => 'array'
+    ];
+
     public function customers()
     {
         return $this->hasMany(Customer::class);

@@ -6,6 +6,7 @@ use App\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Makeable\LaravelFactory\StateManager;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
@@ -106,6 +107,21 @@ class FactoryTest extends TestCase
 
         $this->assertEquals(1, ($created = $this->factory(Department::class)->create())->active);
         $this->assertEquals(1, $created->flagship);
+
+        unset(app(StateManager::class)->afterMaking[Department::class]);
+        unset(app(StateManager::class)->afterCreating[Department::class]);
+    }
+
+    /** @test **/
+    public function regression_it_doesnt_throw_missing_state_exception_when_has_after_callback()
+    {
+        $this->factory()->afterMakingState(Department::class, 'undefined-state', function ($department) {
+            $department->forceFill(['name' => 'HQ']);
+        });
+
+        $this->assertEquals('HQ', $this->factory(Department::class)->state('undefined-state')->make()->name);
+
+        unset(app(StateManager::class)->afterMaking[Company::class]);
     }
 
     /** @test **/
@@ -114,7 +130,6 @@ class FactoryTest extends TestCase
         $factory = $this->factory();
         $factory->defineAs(Customer::class, 'special', function (Generator $faker, array $attributes) {
             $this->assertEquals('bar', $attributes['foo']);
-
             return [];
         });
 
@@ -123,5 +138,23 @@ class FactoryTest extends TestCase
         $this->assertEquals('bar', $customer->foo);
 
         unset($factory[Customer::class]['special']);
+    }
+
+    /** @test **/
+    public function regression_it_ignores_callables_when_expanding_attributes()
+    {
+        $company = $this->factory(Company::class)->create([
+            'tags' => ['Storage', 'Data']
+        ]);
+
+        $this->assertEquals(['Storage', 'Data'], $company->tags);
+    }
+
+    /** @test **/
+    public function regression_it_expands_closures_in_definition_attributes()
+    {
+        $company = $this->factory(Company::class)->state('withOwner')->create();
+
+        $this->assertInstanceOf(User::class, $company->owner);
     }
 }

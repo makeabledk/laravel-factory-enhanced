@@ -6,6 +6,7 @@ use App\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Tests\Integration\Database\FactoryBuildableUser;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\FactoryServiceProvider;
@@ -60,6 +61,13 @@ class TestCase extends BaseTestCase
         $this->factory()->preset(Company::class, 'startup', function (FactoryBuilder $company, Generator $faker) {
             $company->with(1, 'departments')->with(1, 'departments.employees');
         });
+        $this->factory()->state(Company::class, 'withOwner', function (Generator $faker) {
+            return [
+                'owner_id' => function () {
+                    return $this->factory(User::class)->create()->id;
+                },
+            ];
+        });
 
         $this->factory()->state(Customer::class, 'happy', ['satisfaction' => 5]);
 
@@ -67,7 +75,9 @@ class TestCase extends BaseTestCase
             return ['name' => $faker->company];
         });
         $this->factory()->state(Department::class, 'active', ['active' => 1]);
-        $this->factory()->state(Department::class, 'flagship', ['flagship' => 1]);
+        $this->factory()->state(Department::class, 'flagship', function (Generator $faker) {
+            return ['flagship' => 1];
+        });
         $this->factory()->preset(Department::class, 'mediumSized', function (FactoryBuilder $department, Generator $faker) {
             $department->with(1, 'manager')->with(4, 'employees');
         });

@@ -219,7 +219,7 @@ class StateManager
      */
     public function afterCallbackExists($class, $name)
     {
-        return isset($this->stateManager->afterMaking[$class][$name]) ||
-               isset($this->stateManager->afterCreating[$class][$name]);
+        return isset($this->afterMaking[$class][$name]) ||
+               isset($this->afterCreating[$class][$name]);
     }
 }

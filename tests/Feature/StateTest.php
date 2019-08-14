@@ -5,10 +5,8 @@ namespace Makeable\LaravelFactory\Tests\Feature;
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
-use Makeable\LaravelFactory\StateManager;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
-use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\TestCase;
 
 class StateTest extends TestCase

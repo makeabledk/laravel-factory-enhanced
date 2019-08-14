@@ -6,7 +6,6 @@ use App\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Tests\Integration\Database\FactoryBuildableUser;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\FactoryServiceProvider;

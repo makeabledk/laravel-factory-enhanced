@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Company extends Model
 {
     protected $casts = [
-        'tags' => 'array'
+        'tags' => 'array',
     ];
 
     public function customers()

@@ -130,6 +130,7 @@ class FactoryTest extends TestCase
         $factory = $this->factory();
         $factory->defineAs(Customer::class, 'special', function (Generator $faker, array $attributes) {
             $this->assertEquals('bar', $attributes['foo']);
+
             return [];
         });
 
@@ -144,7 +145,7 @@ class FactoryTest extends TestCase
     public function regression_it_ignores_callables_when_expanding_attributes()
     {
         $company = $this->factory(Company::class)->create([
-            'tags' => ['Storage', 'Data']
+            'tags' => ['Storage', 'Data'],
         ]);
 
         $this->assertEquals(['Storage', 'Data'], $company->tags);

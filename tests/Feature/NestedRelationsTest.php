@@ -13,7 +13,7 @@ class NestedRelationsTest extends TestCase
     use RefreshDatabase;
 
     /** @test **/
-    function it_creates_models_with_nested_relations()
+    public function it_creates_models_with_nested_relations()
     {
         $company = $this->factory(Company::class)
             ->with('owner')
@@ -25,7 +25,7 @@ class NestedRelationsTest extends TestCase
     }
 
     /** @test **/
-    function nested_relations_can_be_composed_by_array_syntax()
+    public function nested_relations_can_be_composed_by_array_syntax()
     {
         $company = $this->factory(Company::class)
             ->with('owner')
@@ -44,7 +44,7 @@ class NestedRelationsTest extends TestCase
     }
 
     /** @test **/
-    function nested_relations_can_be_customized_by_closures()
+    public function nested_relations_can_be_customized_by_closures()
     {
         $company = $this->factory(Company::class)
             ->with('owner')
@@ -68,7 +68,7 @@ class NestedRelationsTest extends TestCase
     }
 
     /** @test **/
-    function nested_relations_can_be_specified_separate_function_calls()
+    public function nested_relations_can_be_specified_separate_function_calls()
     {
         $company = $this->factory(Company::class)
             ->with('owner')

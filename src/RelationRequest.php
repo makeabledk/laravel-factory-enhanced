@@ -3,12 +3,9 @@
 namespace Makeable\LaravelFactory;
 
 use BadMethodCallException;
-use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 
 class RelationRequest
 {
@@ -71,7 +68,7 @@ class RelationRequest
      */
     public function __construct($class, $batch, $args)
     {
-        list ($this->batch, $this->model) = [$batch, new $class];
+        [$this->batch, $this->model] = [$batch, new $class];
 
         $this->parseArgs($args);
 
@@ -128,7 +125,6 @@ class RelationRequest
         $request->states = $this->states;
 
         return $request;
-
     }
 
     /**

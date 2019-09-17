@@ -13,7 +13,7 @@ class SimpleRelationsTest extends TestCase
     use RefreshDatabase;
 
     /** @test **/
-    function it_creates_models_with_belongs_to_relations()
+    public function it_creates_models_with_belongs_to_relations()
     {
         $company = $this->factory(Company::class)
             ->with('owner')
@@ -24,7 +24,7 @@ class SimpleRelationsTest extends TestCase
     }
 
     /** @test **/
-    function it_creates_models_with_has_many_relations()
+    public function it_creates_models_with_has_many_relations()
     {
         $company = $this->factory(Company::class)
             ->with(2, 'divisions')
@@ -36,7 +36,7 @@ class SimpleRelationsTest extends TestCase
     }
 
     /** @test **/
-    function it_creates_models_with_multiple_relations()
+    public function it_creates_models_with_multiple_relations()
     {
         $company = $this->factory(Company::class)
             ->with('owner')
@@ -48,7 +48,7 @@ class SimpleRelationsTest extends TestCase
     }
 
     /** @test **/
-    function the_same_relation_can_be_created_multiple_times_using_andWith()
+    public function the_same_relation_can_be_created_multiple_times_using_andWith()
     {
         $company = $this->factory(Company::class)
             ->with('owner')

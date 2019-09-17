@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Makeable\LaravelFactory;
 
 use Faker\Generator as Faker;
@@ -9,8 +8,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
+use Makeable\LaravelFactory\Concerns\NormalizesAttributes;
 
 class FactoryBuilder
 {
@@ -400,7 +399,7 @@ class FactoryBuilder
 
     /**
      * Run attribute closures, merge resulting attributes
-     * and finally expand to their underlying values
+     * and finally expand to their underlying values.
      *
      * @param Collection|array $attributes
      * @param array $inlineAttributes

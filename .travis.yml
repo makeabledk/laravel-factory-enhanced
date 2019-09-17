@@ -30,9 +30,9 @@ matrix:
     - php: 7.3
       env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-stable'
 
-before_script:
+before_install:
   - travis_retry composer self-update
-  - travis_retry composer require --no-update --no-interaction "illuminate/support:${LARAVEL}" "phpunit/phpunit:${PHPUNIT}"
+  - travis_retry composer require --no-update --no-interaction "laravel/laravel:${LARAVEL}" "phpunit/phpunit:${PHPUNIT}"
 
 install:
   - travis_retry composer update ${COMPOSER_FLAGS} --prefer-dist --no-interaction --no-suggest

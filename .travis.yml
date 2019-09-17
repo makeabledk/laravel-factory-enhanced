@@ -21,6 +21,14 @@ matrix:
       env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-lowest'
     - php: 7.3
       env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-stable'
+    - php: 7.2
+      env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.2
+      env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-stable'
+    - php: 7.3
+      env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.3
+      env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-stable'
 
 before_script:
   - travis_retry composer self-update

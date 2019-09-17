@@ -31,19 +31,19 @@ class TestCase extends BaseTestCase
 
         $this->factory()->define(Company::class, function (Generator $faker) {
             return [
-                'name' => $faker->company
+                'name' => $faker->company,
             ];
         });
 
         $this->factory()->state(Customer::class, 'happy', function (Generator $faker) {
             return [
-                'satisfaction' => 5
+                'satisfaction' => 5,
             ];
         });
 
         $this->factory()->define(Division::class, function (Generator $faker) {
             return [
-                'name' => $faker->company
+                'name' => $faker->company,
             ];
         });
 

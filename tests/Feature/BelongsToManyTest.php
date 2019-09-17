@@ -12,7 +12,7 @@ class BelongsToManyTest extends TestCase
     use RefreshDatabase;
 
     /** @test **/
-    function it_creates_models_with_belongs_to_many_relations()
+    public function it_creates_models_with_belongs_to_many_relations()
     {
         $division = $this->factory(Division::class)
             ->with(2, 'employees')
@@ -23,7 +23,7 @@ class BelongsToManyTest extends TestCase
     }
 
     /** @test **/
-    function it_accepts_pivot_attributes_on_belongs_to_many_relations()
+    public function it_accepts_pivot_attributes_on_belongs_to_many_relations()
     {
         $division = $this->factory(Division::class)->with(1, 'employees', function ($employee) {
             $employee->fillPivot(['started_at' => '2019-01-01 00:00:00']);
@@ -36,7 +36,7 @@ class BelongsToManyTest extends TestCase
     }
 
     /** @test **/
-    function it_accepts_closures_as_pivot_attributes_and_they_will_evaluate_on_each_model()
+    public function it_accepts_closures_as_pivot_attributes_and_they_will_evaluate_on_each_model()
     {
         [$i, $dates] = [0, [now()->subMonth(), now()->subDay()]];
 

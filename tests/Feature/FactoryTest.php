@@ -14,19 +14,19 @@ class FactoryTest extends TestCase
     use RefreshDatabase;
 
     /** @test **/
-    function creating_models_with_no_relations()
+    public function creating_models_with_no_relations()
     {
         $this->assertInstanceOf(User::class, $this->factory(User::class)->create());
     }
 
     /** @test **/
-    function creating_models_without_prior_definitions()
+    public function creating_models_without_prior_definitions()
     {
         $this->assertInstanceOf(Customer::class, $this->factory(Customer::class)->create());
     }
 
     /** @test **/
-    function it_applies_closures_when_a_condition_is_met()
+    public function it_applies_closures_when_a_condition_is_met()
     {
         $createTwice = function ($builder) {
             $builder->times(2);
@@ -44,8 +44,8 @@ class FactoryTest extends TestCase
         };
 
         // With decimal
-        $this->assertInstanceOf(User::class, $this->factory(User::class)->odds(0/1, $createTwice)->create());
-        $this->assertInstanceOf(Collection::class, $this->factory(User::class)->odds(1/1, $createTwice)->create());
+        $this->assertInstanceOf(User::class, $this->factory(User::class)->odds(0 / 1, $createTwice)->create());
+        $this->assertInstanceOf(Collection::class, $this->factory(User::class)->odds(1 / 1, $createTwice)->create());
 
         // With 0-100
         $this->assertInstanceOf(User::class, $this->factory(User::class)->odds(0, $createTwice)->create());
@@ -57,7 +57,7 @@ class FactoryTest extends TestCase
     }
 
     /** @test **/
-    function a_builder_can_be_tapped()
+    public function a_builder_can_be_tapped()
     {
         $createTwice = function ($builder) {
             $builder->times(2);
@@ -74,6 +74,7 @@ class FactoryTest extends TestCase
         $factory = $this->factory();
         $factory->defineAs(Customer::class, 'special', function (Generator $faker, array $attributes) {
             $this->assertEquals('bar', $attributes['foo']);
+
             return [];
         });
 

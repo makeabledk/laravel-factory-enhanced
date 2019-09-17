@@ -15,6 +15,7 @@ trait NormalizesAttributes
         if ($result instanceof Model) {
             $result = [$result];
         }
+
         return collect($result);
     }
 
@@ -29,7 +30,7 @@ trait NormalizesAttributes
 
     /**
      * @param $arg
-     * @return Callable
+     * @return callable
      */
     protected function wrapCallable($arg)
     {
@@ -38,6 +39,7 @@ trait NormalizesAttributes
                 return $arg;
             };
         }
+
         return $arg;
     }
 }

@@ -7,17 +7,27 @@ cache:
     - $HOME/.composer/cache
 
 matrix:
+  fast_finish: true
   include:
     - php: 7.1
+      env: LARAVEL='5.5.*' PHPUNIT='6.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.1
+      env: LARAVEL='5.5.*' PHPUNIT='6.*' COMPOSER_FLAGS='--prefer-stable'
     - php: 7.2
+      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.2
+      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-stable'
     - php: 7.3
-  fast_finish: true
+      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.3
+      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-stable'
 
-before_install:
+before_script:
   - travis_retry composer self-update
+  - travis_retry composer require --no-update --no-interaction "illuminate/support:${LARAVEL}" "phpunit/phpunit:${PHPUNIT}"
 
 install:
-  - travis_retry composer install --prefer-dist --no-interaction --no-suggest
+  - travis_retry composer update ${COMPOSER_FLAGS} --prefer-dist --no-interaction --no-suggest
 
 script:
   - vendor/bin/phpunit

@@ -176,13 +176,13 @@ factory()->preset(User::class, 'businessOwner', function (FactoryBuilder $user, 
 Now we may use the factory to create a `User` using that preset:
 
 ```php
-factory(User::class)->preset(‘businessOwner’)->create();
+factory(User::class)->preset('businessOwner')->create();
 ```
 
 Or on the fly in a relation:
 
 ```php
-factory(Invoice::class)->with(‘businessOwner’, ‘user’)->create();
+factory(Invoice::class)->with('businessOwner', 'user')->create();
 ```
 
 This is super powerful, as it allows you to make use of the full `FactoryBuilder`, instead of relying on it to only return attributes.

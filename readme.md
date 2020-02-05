@@ -145,30 +145,48 @@ The above example will create 1x team that has
 
 In addition to passing *count* and *state* directly into the `with` function, you may also pass a closure that will receive the `FactoryBuilder` instance directly.
 
+In the closure you can do everything you are used to on the `FactoryBuilder` - including nesting further relationships should you wish to.
+
 ```php
 factory(Team::class)    
     ->with('servers', function (FactoryBuilder $servers) {
         $servers
             ->times(2)
             ->states('active')
+            ->with(3, 'sites');
     })
     ->create();
 ```
 
-You may also nest further relationships in the builder should you wish to.
 
-One advantage by using closures, is that it will be evaluated each time the factory-model (in this case a `server`) is created.
-This is especially handy if you'd like some random relations in your `DevelopmentSeeder`.
+### Introducing presets
+
+While we currently have `definitions` and `states` in Laravel, none of these allow us to reuse more higher level configurations such as “a user with 1 small team that has 2 employees”.
+
+For this purpose a new preset definition is introduced, and works like this:
 
 ```php
-factory(Team::class)    
-    ->with('servers', function (FactoryBuilder $servers) {
-        $servers
-            ->times(random_int(1, 5))
-            ->states(array_random(['online', 'offline']))
-    })
-    ->create();
+factory()->preset(User::class, 'businessOwner', function (FactoryBuilder $user, Generator $faker) {
+    $user
+        ->with(1, 'teams')
+        ->with(2, 'teams.employees');
+});
 ```
+
+Now we may use the factory to create a `User` using that preset:
+
+```php
+factory(User::class)->preset(‘businessOwner’)->create();
+```
+
+Or on the fly in a relation:
+
+```php
+factory(Invoice::class)->with(‘businessOwner’, ‘user’)->create();
+```
+
+This is super powerful, as it allows you to make use of the full `FactoryBuilder`, instead of relying on it to only return attributes.
+
 
 ## Examples
 
@@ -187,9 +205,8 @@ $courses = Collection::times(5)->map(function () {
             $course
                 ->with(1, 'danish', 'translations')
                 ->with(random_int(1, 5), 'translations.chapters')
-                ->with(random_int(1, 5), 'danish', 'translations.chapters.videos')
-        })
-    });
+                ->with(random_int(1, 5), 'danish', 'translations.chapters.videos');
+        });
 });
 ```
 
@@ -228,15 +245,20 @@ These are the provided methods on the `FactoryBuilder` instance in addition to t
 - fill
 ->fillPivot (only applicable on BelongsToMany
 - odds
+- preset
+- presets
+- tap
 - when
 - with
 - andWith
 
-## Word of caution
+## Notice
 
 This package swaps the native factory implementation with it's own implementation. 
 
-While the public API is aimed to be 100% compatible with the native one, some differences may occur. In that case we're happy to hear from you.
+While the public API is aimed to be 100% compatible with the core factory, new functionality may take a bit longer to become available. 
+
+We are happy to hear from you if you find anything missing.
 
 ## Change log
 

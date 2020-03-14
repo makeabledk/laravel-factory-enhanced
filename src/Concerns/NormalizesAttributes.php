@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory\Concerns;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 trait NormalizesAttributes
@@ -14,11 +15,15 @@ trait NormalizesAttributes
      */
     protected function collect($result = null)
     {
-        if ($result instanceof Model) {
-            $result = [$result];
-        }
-
-        return collect($result);
+        return $result instanceof Model
+            ? $result->newCollection([$result])
+            : $result;
+//
+//        if ($result instanceof Model) {
+//            $result = [$result];
+//        }
+//
+//        return new Collection($result);
     }
 
     /**

@@ -13,8 +13,6 @@ use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
-    use PrototypesModels;
-
     /**
      * The parent model requesting relations.
      *
@@ -30,9 +28,11 @@ class RelationRequest
     protected $batch;
 
     /**
-     * @var StateManager
+     * The given inline arguments except relation path
+     * .
+     * @var array
      */
-    protected $stateManager;
+    protected $args;
 
     /**
      * @var string|null
@@ -47,28 +47,21 @@ class RelationRequest
     public $path;
 
     /**
-     * The build function.
-     *
-     * @var callable | null
-     */
-    public $builder = null;
-
-    /**
      * Create a new relationship request.
      *
      * @param $class
      * @param $batch
-     * @param StateManager $stateManager
      * @param mixed $args
      */
-    public function __construct($class, $batch, StateManager $stateManager, $args)
+    public function __construct($class, $batch, $args)
     {
-        [$this->class, $this->batch, $this->stateManager] = [$class, $batch, $stateManager];
+        [$this->class, $this->batch] = [$class, $batch];
 
-        collect($args)
+        $this->args = collect($args)
             ->pipe(Closure::fromCallable([$this, 'findAndPopRelationName']))
             ->tap(Closure::fromCallable([$this, 'failOnMissingRelation']))
-            ->each(Closure::fromCallable([$this, 'parseArgument']));
+            ->values()
+            ->all();
     }
 
     /**
@@ -78,16 +71,26 @@ class RelationRequest
      */
     public function createNestedRequest()
     {
-        $request = new static($this->getRelatedClass(), $this->batch, $this->stateManager, $this->getNestedPath());
-        $request->amount = $this->amount;
-        $request->attributes = $this->attributes;
-        $request->builder = $this->builder;
-        $request->states = $this->states;
-
-        return $request;
+        return new static(
+            $this->getRelatedClass(),
+            $this->batch,
+            collect($this->args)->prepend($this->getNestedPath())
+        );
     }
 
     /**
+     * Get provided inline args.
+     *
+     * @return array
+     */
+    public function getArgs()
+    {
+        return $this->args;
+    }
+
+    /**
+     * Get batch no.
+     *
      * @return int
      */
     public function getBatch()
@@ -183,58 +186,6 @@ class RelationRequest
     protected function model()
     {
         return new $this->class;
-    }
-
-    /**
-     * Parse each individual argument given to 'with'.
-     *
-     * @param mixed $arg
-     * @return void
-     */
-    protected function parseArgument($arg)
-    {
-        if (is_null($arg)) {
-            return;
-        }
-
-        if (is_numeric($arg)) {
-            $this->amount = $arg;
-
-            return;
-        }
-
-        if (is_array($arg) && ! isset($arg[0])) {
-            $this->attributes = $arg;
-
-            return;
-        }
-
-        if (is_callable($arg) && ! is_string($arg)) {
-            $this->builder = $arg;
-
-            return;
-        }
-
-        if (is_string($arg) && $this->isValidRelation($arg)) {
-            $this->path = $arg;
-
-            return;
-        }
-
-        if (is_string($arg) && $this->stateManager->definitionExists($this->getRelatedClass(), $arg)) {
-            $this->definition = $arg;
-
-            return;
-        }
-
-        if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
-            $this->presets = array_merge($this->presets, Arr::wrap($arg));
-
-            return;
-        }
-
-        // If nothing else, we'll assume $arg represent some state.
-        return $this->states = array_merge($this->states, Arr::wrap($arg));
     }
 
     /**

@@ -6,7 +6,9 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Makeable\LaravelFactory\Factory;
@@ -91,10 +93,13 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsToMany::class))
             ->each(function ($batches, $relation) use ($sibling) {
                 foreach ($batches as $factory) {
-                    $models = $this->collect($factory->inheritConnection($this)->create());
-                    $models->each(function ($model) use ($sibling, $relation, $factory) {
-                        $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
-                    });
+                    $results = $this
+                        ->collect($factory->inheritConnection($this)->create())
+                        ->map(function ($model) use ($sibling, $relation, $factory) {
+                            return $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
+                        });
+
+                    $sibling->setRelation($relation, $results);
                 }
             });
     }
@@ -111,15 +116,21 @@ trait BuildsRelationships
             ->each(function ($batches, $relation) use ($parent) {
                 foreach ($batches as $factory) {
                     // In case of morphOne / morphMany we'll need to set the morph type as well.
-                    if (($morphRelation = $this->newRelation($relation)) instanceof MorphOneOrMany) {
+                    if (($relationClass = $this->newRelation($relation)) instanceof MorphOneOrMany) {
                         $factory->fill([
-                            $morphRelation->getMorphType() => (new $this->class)->getMorphClass(),
+                            $relationClass->getMorphType() => (new $this->class)->getMorphClass(),
                         ]);
                     }
 
-                    $factory->inheritConnection($this)->create([
+                    $results = $factory->inheritConnection($this)->create([
                         $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey(),
                     ]);
+
+                    $results = $relationClass instanceof MorphOne || $relationClass instanceof HasOne
+                        ? $this->collectModel($results)
+                        : $this->collect($results);
+
+                    $parent->setRelation($relation, $results);
                 }
             });
     }

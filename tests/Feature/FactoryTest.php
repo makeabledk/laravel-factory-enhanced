@@ -158,4 +158,15 @@ class FactoryTest extends TestCase
 
         $this->assertInstanceOf(User::class, $company->owner);
     }
+
+    /** @test **/
+    public function it_parses_fluent_inline_arguments()
+    {
+        $companies = $this->factory(Company::class)
+            ->apply(2, 'withOwner')
+            ->create();
+
+        $this->assertEquals(2, $companies->count());
+        $this->assertInstanceOf(User::class, $companies->first()->owner);
+    }
 }

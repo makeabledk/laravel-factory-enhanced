@@ -25,7 +25,14 @@ class FactoryBuilder
      *
      * @var string
      */
-    protected $class;
+    public $class;
+
+    /**
+     * The model states.
+     *
+     * @var StateManager
+     */
+    public $stateManager;
 
     /**
      * The database connection on which the model instance should be persisted.
@@ -42,13 +49,6 @@ class FactoryBuilder
     protected $faker;
 
     /**
-     * The model states.
-     *
-     * @var StateManager
-     */
-    protected $stateManager;
-
-    /**
      * Create an new builder instance.
      *
      * @param  string  $class
@@ -61,6 +61,19 @@ class FactoryBuilder
         $this->class = $class;
         $this->faker = $faker;
         $this->stateManager = $stateManager;
+    }
+
+    /**
+     * Parse and apply fluent args.
+     *
+     * @param  mixed  ...$args
+     * @return \Makeable\LaravelFactory\FactoryBuilder
+     */
+    public function apply(...$args)
+    {
+        app(InlineArgumentParser::class)->apply($args, $this);
+
+        return $this;
     }
 
     /**
@@ -256,12 +269,8 @@ class FactoryBuilder
      */
     public function with(...$args)
     {
-        if (count($args) === 1 && $args[0] instanceof RelationRequest) {
-            return tap($this)->loadRelation($args[0]);
-        }
-
         return tap($this)->loadRelation(
-            new RelationRequest($this->class, $this->currentBatch, $this->stateManager, $args)
+            new RelationRequest($this->class, $this->currentBatch, $args)
         );
     }
 

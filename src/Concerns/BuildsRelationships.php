@@ -37,26 +37,11 @@ trait BuildsRelationships
      */
     public function loadRelation(RelationRequest $request)
     {
-        $factory = $this->buildFactoryForRequest($request);
+        $factory = $this->createRelatedFactory($request);
 
-        // Recursively create factories until no further nesting.
-        if ($request->hasNesting()) {
-            $factory->with($request->createNestedRequest());
-        }
-
-        // Apply the request onto the newly created factory.
-        else {
-            $factory
-                ->fill($request->attributes)
-                ->presets($request->presets)
-                ->states($request->states)
-                ->when($request->amount, function ($factory, $amount) {
-                    $factory->times($amount);
-                })
-                ->when($request->builder, function ($factory, $builder) {
-                    $factory->tap($builder);
-                });
-        }
+        $request->hasNesting()
+            ? $factory->loadRelation($request->createNestedRequest())
+            : $factory->apply(...$request->getArgs());
 
         return $this;
     }
@@ -67,10 +52,9 @@ trait BuildsRelationships
      * @param RelationRequest $request
      * @return FactoryBuilder
      */
-    protected function buildFactoryForRequest($request)
+    protected function createRelatedFactory($request)
     {
-        $relation = $request->getRelationName();
-        $batch = $request->getBatch();
+        [$relation, $batch] = [$request->getRelationName(), $request->getBatch()];
 
         return data_get($this->relations, "{$relation}.{$batch}", function () use ($request, $relation, $batch) {
             return tap(app(Factory::class)->of($request->getRelatedClass()), function ($factory) use ($relation, $batch) {

@@ -140,6 +140,19 @@ class RelationsTest extends TestCase
     }
 
     /** @test **/
+    public function pivot_attributes_may_be_filled_using_dot_pivot_annotation()
+    {
+        $department = $this->factory(Department::class)
+            ->with(1, 'employees', ['pivot.started_at' => '2019-01-01 00:00:00'])
+            ->create();
+
+        $employees = $department->employees()->withPivot('started_at')->get();
+
+        $this->assertEquals('2019-01-01 00:00:00', $employees->first()->pivot->started_at);
+        $this->assertEquals(1, $employees->count());
+    }
+
+    /** @test **/
     public function it_accepts_closures_as_pivot_attributes_and_they_will_evaluate_on_each_model()
     {
         [$i, $dates] = [0, [now()->subMonth(), now()->subDay()]];

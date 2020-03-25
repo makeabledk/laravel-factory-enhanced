@@ -7,9 +7,7 @@ use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {

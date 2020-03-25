@@ -73,7 +73,6 @@ class InlineArgumentParser
             return;
         }
 
-
         // If nothing else, we'll assume $arg represent some state.
         $builder->states(array_merge($builder->states, Arr::wrap($arg)));
     }

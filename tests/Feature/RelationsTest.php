@@ -102,7 +102,7 @@ class RelationsTest extends TestCase
             ->create();
 
         // We'll have to unset and re-fetch from the db as only the last relation will be set
-        $company->unsetRelation('departments');
+        $company->setRelations([]);
 
         $this->assertEquals(2, $company->departments->count());
         $this->assertNull($company->departments->first()->manager);

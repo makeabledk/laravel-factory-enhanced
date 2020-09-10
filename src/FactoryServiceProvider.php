@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory;
 
 use Faker\Generator;
-use Faker\Generator as FakerGenerator;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
 use Illuminate\Support\ServiceProvider;
 

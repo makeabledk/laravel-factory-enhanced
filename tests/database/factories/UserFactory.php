@@ -6,6 +6,6 @@ $factory->define(\Makeable\LaravelFactory\Tests\Stubs\User::class, function (Gen
     return [
         'name' => $faker->company,
         'email' => $faker->email,
-        'password' => bcrypt('test')
+        'password' => bcrypt('test'),
     ];
 });

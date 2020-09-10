@@ -2,7 +2,6 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use Makeable\LaravelFactory\Tests\Stubs\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -10,6 +9,7 @@ use Makeable\LaravelFactory\StateManager;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
+use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
 
 class FactoryTest extends TestCase

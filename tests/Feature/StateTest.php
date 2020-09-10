@@ -2,7 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use App\User;
+use Makeable\LaravelFactory\Tests\Stubs\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Makeable\LaravelFactory\Tests\Stubs\Company;

@@ -9,22 +9,6 @@ cache:
 matrix:
   fast_finish: true
   include:
-    - php: 7.1
-      env: LARAVEL='5.5.*' PHPUNIT='6.*' COMPOSER_FLAGS='--prefer-lowest'
-    - php: 7.1
-      env: LARAVEL='5.5.*' PHPUNIT='6.*' COMPOSER_FLAGS='--prefer-stable'
-    - php: 7.2
-      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-lowest'
-    - php: 7.2
-      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-stable'
-    - php: 7.3
-      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-lowest'
-    - php: 7.3
-      env: LARAVEL='5.7.*' PHPUNIT='7.5.*' COMPOSER_FLAGS='--prefer-stable'
-    - php: 7.2
-      env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-lowest'
-    - php: 7.2
-      env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-stable'
     - php: 7.3
       env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-lowest'
     - php: 7.3
@@ -33,16 +17,22 @@ matrix:
       env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-lowest'
     - php: 7.4
       env: LARAVEL='6.*' PHPUNIT='8.*' COMPOSER_FLAGS='--prefer-stable'
-    - php: 7.2
-      env: LARAVEL='7.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-lowest'
-    - php: 7.2
-      env: LARAVEL='7.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-stable'
     - php: 7.3
       env: LARAVEL='7.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-lowest'
     - php: 7.3
       env: LARAVEL='7.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-stable'
     - php: 7.4
+      env: LARAVEL='7.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.4
       env: LARAVEL='7.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-stable'
+    - php: 7.3
+      env: LARAVEL='8.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.3
+      env: LARAVEL='8.*' PHPUNIT='9.*' COMPOSER_FLAGS='--prefer-stable'
+    - php: 7.4
+      env: LARAVEL='8.*' PHPUNIT='8.5.*' COMPOSER_FLAGS='--prefer-lowest'
+    - php: 7.4
+      env: LARAVEL='8.*' PHPUNIT='9.*' COMPOSER_FLAGS='--prefer-stable'
 
 before_install:
   - travis_retry composer self-update

@@ -2,7 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use App\User;
+use Makeable\LaravelFactory\Tests\Stubs\User;
 use Faker\Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;

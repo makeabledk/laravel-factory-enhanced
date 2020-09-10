@@ -2,7 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use App\User;
+use Makeable\LaravelFactory\Tests\Stubs\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
@@ -122,7 +122,7 @@ class RelationsTest extends TestCase
     public function it_throws_a_bad_method_call_on_missing_relations()
     {
         $this->expectException(\BadMethodCallException::class);
-        $this->expectExceptionMessageRegExp('/invalidRelation/');
+        $this->expectExceptionMessageMatches('/invalidRelation/');
         $this->factory(Company::class)->with(1, 'invalidRelation')->create();
     }
 

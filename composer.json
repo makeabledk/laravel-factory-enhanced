@@ -4,7 +4,10 @@
     "autoload": {
         "psr-4": {
             "Makeable\\LaravelFactory\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "require": {
         "php": "^7.3",
@@ -22,10 +25,7 @@
     "autoload-dev": {
         "psr-4": {
             "Makeable\\LaravelFactory\\Tests\\": "tests/"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+        }
     },
     "extra": {
         "laravel": {

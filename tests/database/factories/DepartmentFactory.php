@@ -1,19 +1,37 @@
 <?php
 
-use Faker\Generator;
-use Makeable\LaravelFactory\FactoryBuilder;
+namespace Makeable\LaravelFactory\Tests\Database\Factories;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
 
-$factory->define(Department::class, function (Generator $faker) {
-    return ['name' => $faker->company];
-});
+class DepartmentFactory extends Factory
+{
+    protected $model = Department::class;
 
-$factory->state(Department::class, 'active', ['active' => 1]);
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->company,
+        ];
+    }
 
-$factory->state(Department::class, 'flagship', function (Generator $faker) {
-    return ['flagship' => 1];
-});
+    public function active()
+    {
+        return ['active' => 1];
+    }
 
-$factory->preset(Department::class, 'mediumSized', function (FactoryBuilder $department, Generator $faker) {
-    $department->with(1, 'manager')->with(4, 'employees');
-});
+    public function flagship()
+    {
+        return ['flagship' => 1];
+    }
+
+    public function mediumSized()
+    {
+        return [];
+//        return $this
+//            ->with(1, 'manager')
+//            ->with(4, 'employees');
+    }
+}

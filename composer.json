@@ -11,20 +11,21 @@
     },
     "require": {
         "php": "^7.3",
-        "illuminate/database": "^6.0|^7.0|^8.0",
-        "illuminate/support": "^6.0|^7.0|^8.0",
+        "illuminate/database": "^8.0",
+        "illuminate/support": "^8.0",
         "fzaninotto/faker": "^1.4"
     },
     "require-dev": {
         "codedungeon/phpunit-result-printer": "^0.28.0",
         "doctrine/dbal": "^2.5",
         "mockery/mockery": "^1.3",
-        "laravel/laravel": "^6.0|^7.0|^8.0",
-        "phpunit/phpunit": "^8.5.3|^9.0"
+        "laravel/laravel": "^8.0",
+        "phpunit/phpunit": "^9.0"
     },
     "autoload-dev": {
         "psr-4": {
-            "Makeable\\LaravelFactory\\Tests\\": "tests/"
+            "Makeable\\LaravelFactory\\Tests\\": "tests/",
+            "Makeable\\LaravelFactory\\Tests\\Database\\Factories\\": "tests/database/factories"
         }
     },
     "extra": {

@@ -23,9 +23,6 @@ class TestCase extends BaseTestCase
         $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
         $app->register(FactoryServiceProvider::class);
         $app->useDatabasePath(__DIR__.'/database');
-//        $app->afterResolving('migrator', function ($migrator) {
-//            $migrator->path(__DIR__.'/migrations/');
-//        });
 
         $app['config']->set('database.default', 'primary');
         $app['config']->set('database.connections.primary', [

@@ -3,14 +3,16 @@
 use Makeable\LaravelFactory\Factory;
 
 if (! function_exists('factory')) {
-    function factory($class, $amount = null)
+    function factory($model, ...$arguments)
     {
-        $factory = app(Factory::class);
-
-        if (isset($amount) && is_int($amount)) {
-            return $factory->of($class)->times($amount);
-        }
-
-        return $factory->of($class);
+        return Factory::factoryForModel($model)->apply(...$arguments);
+//
+//        $factory = app(Factory::class);
+//
+//        if (isset($amount) && is_int($amount)) {
+//            return $factory->of($class)->times($amount);
+//        }
+//
+//        return $factory->of($class);
     }
 }

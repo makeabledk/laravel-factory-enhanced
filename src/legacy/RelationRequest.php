@@ -13,14 +13,14 @@ use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
-//    use PrototypesModels;
+    use PrototypesModels;
 
     /**
      * The parent model requesting relations.
      *
      * @var Model
      */
-    protected $model;
+    protected $class;
 
     /**
      * The batch number.
@@ -29,7 +29,10 @@ class RelationRequest
      */
     protected $batch;
 
-    protected $args;
+    /**
+     * @var StateManager
+     */
+    protected $stateManager;
 
     /**
      * @var string|null
@@ -44,23 +47,28 @@ class RelationRequest
     public $path;
 
     /**
+     * The build function.
+     *
+     * @var callable | null
+     */
+    public $builder = null;
+
+    /**
      * Create a new relationship request.
      *
-     * @param $model
+     * @param $class
      * @param $batch
+     * @param StateManager $stateManager
      * @param mixed $args
      */
-    public function __construct($model, $batch, $args)
+    public function __construct($class, $batch, StateManager $stateManager, $args)
     {
-        [$this->model, $this->batch, $this->args] = [$model, $batch, $args];
+        [$this->class, $this->batch, $this->stateManager] = [$class, $batch, $stateManager];
 
-        $this->findAndPopRelationName($this->args);
-        $this->failOnMissingRelation($this->args);
-
-//        collect($args)
-//            ->pipe(Closure::fromCallable([$this, 'findAndPopRelationName']))
-//            ->tap(Closure::fromCallable([$this, 'failOnMissingRelation']));
-//            ->each(Closure::fromCallable([$this, 'parseArgument']));
+        collect($args)
+            ->pipe(Closure::fromCallable([$this, 'findAndPopRelationName']))
+            ->tap(Closure::fromCallable([$this, 'failOnMissingRelation']))
+            ->each(Closure::fromCallable([$this, 'parseArgument']));
     }
 
     /**
@@ -70,16 +78,13 @@ class RelationRequest
      */
     public function createNestedRequest()
     {
-        return new static(
-            $this->getRelatedClass(),
-            $this->batch,
-            Arr::prepend($this->args, $this->getNestedPath())
-        );
-    }
+        $request = new static($this->getRelatedClass(), $this->batch, $this->stateManager, $this->getNestedPath());
+        $request->amount = $this->amount;
+        $request->attributes = $this->attributes;
+        $request->builder = $this->builder;
+        $request->states = $this->states;
 
-    public function getArguments(): array
-    {
-        return $this->args;
+        return $request;
     }
 
     /**
@@ -114,7 +119,8 @@ class RelationRequest
     {
         $relation = $this->getRelationName();
 
-        return $this->cachedRelatedClass ??= get_class($this->model()->$relation()->getRelated());
+        return $this->cachedRelatedClass = $this->cachedRelatedClass
+            ?: get_class($this->model()->$relation()->getRelated());
     }
 
     /**
@@ -176,60 +182,60 @@ class RelationRequest
      */
     protected function model()
     {
-        return new $this->model;
+        return new $this->class;
     }
 
-//    /**
-//     * Parse each individual argument given to 'with'.
-//     *
-//     * @param mixed $arg
-//     * @return void
-//     */
-//    protected function parseArgument($arg)
-//    {
-//        if (is_null($arg)) {
-//            return;
-//        }
-//
-//        if (is_numeric($arg)) {
-//            $this->amount = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_array($arg) && ! isset($arg[0])) {
-//            $this->attributes = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_callable($arg) && ! is_string($arg)) {
-//            $this->builder = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_string($arg) && $this->isValidRelation($arg)) {
-//            $this->path = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_string($arg) && $this->stateManager->definitionExists($this->getRelatedClass(), $arg)) {
-//            $this->definition = $arg;
-//
-//            return;
-//        }
-//
-//        if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
-//            $this->presets = array_merge($this->presets, Arr::wrap($arg));
-//
-//            return;
-//        }
-//
-//        // If nothing else, we'll assume $arg represent some state.
-//        return $this->states = array_merge($this->states, Arr::wrap($arg));
-//    }
+    /**
+     * Parse each individual argument given to 'with'.
+     *
+     * @param mixed $arg
+     * @return void
+     */
+    protected function parseArgument($arg)
+    {
+        if (is_null($arg)) {
+            return;
+        }
+
+        if (is_numeric($arg)) {
+            $this->amount = $arg;
+
+            return;
+        }
+
+        if (is_array($arg) && ! isset($arg[0])) {
+            $this->attributes = $arg;
+
+            return;
+        }
+
+        if (is_callable($arg) && ! is_string($arg)) {
+            $this->builder = $arg;
+
+            return;
+        }
+
+        if (is_string($arg) && $this->isValidRelation($arg)) {
+            $this->path = $arg;
+
+            return;
+        }
+
+        if (is_string($arg) && $this->stateManager->definitionExists($this->getRelatedClass(), $arg)) {
+            $this->definition = $arg;
+
+            return;
+        }
+
+        if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
+            $this->presets = array_merge($this->presets, Arr::wrap($arg));
+
+            return;
+        }
+
+        // If nothing else, we'll assume $arg represent some state.
+        return $this->states = array_merge($this->states, Arr::wrap($arg));
+    }
 
     /**
      * Fail build with a readable exception message.
@@ -240,7 +246,7 @@ class RelationRequest
     {
         if (! $this->path) {
             throw new BadMethodCallException(
-                'No matching relations could be found on model ['.$this->model.']. '.
+                'No matching relations could be found on model ['.$this->class.']. '.
                 'Following possible relation names was checked: '.
                 (
                     ($testedRelations = $this->getPossiblyIntendedRelationships($args))->isEmpty()

@@ -2,10 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use Faker\Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Collection;
-use Makeable\LaravelFactory\StateManager;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
@@ -31,7 +28,7 @@ class FactoryTest extends TestCase
     /** @test **/
     public function it_creates_models_on_a_custom_connection()
     {
-        $company = factory(Company::class)
+        $company = Company::factory()
             ->connection('secondary')
             ->create(['name' => 'Evil corp']);
 
@@ -42,7 +39,7 @@ class FactoryTest extends TestCase
     /** @test **/
     public function it_makes_models_on_a_custom_connection()
     {
-        $company = factory(Company::class)
+        $company = Company::factory()
             ->connection('secondary')
             ->make(['name' => 'Evil corp']);
 

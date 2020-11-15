@@ -2,8 +2,6 @@
 
 namespace Makeable\LaravelFactory;
 
-use Faker\Generator;
-use Illuminate\Database\Eloquent\Factory as EloquentFactory;
 use Illuminate\Support\ServiceProvider;
 
 class FactoryServiceProvider extends ServiceProvider

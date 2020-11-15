@@ -2,7 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 
 class UserFactory extends Factory

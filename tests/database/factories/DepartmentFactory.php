@@ -2,8 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Database\Factories;
 
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
 
 class DepartmentFactory extends Factory

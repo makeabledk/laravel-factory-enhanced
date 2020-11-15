@@ -19,7 +19,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_models_with_belongs_to_relations()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with('owner')
             ->create();
 

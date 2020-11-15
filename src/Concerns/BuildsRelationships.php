@@ -56,6 +56,12 @@ trait BuildsRelationships
             });
         });
     }
+
+    protected function applyRelations()
+    {
+        dd('ok');
+    }
+
 //
 //    /**
 //     * Create all requested BelongsTo relations.

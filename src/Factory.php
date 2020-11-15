@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory;
 
+use Illuminate\Database\Eloquent\Model;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 
 class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
@@ -65,5 +66,24 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
     public function andWith(...$args): self
     {
         return $this->newBatch()->with(...$args);
+    }
+
+    protected function createChildren(Model $model)
+    {
+        $this->applyRelations();
+
+        parent::createChildren($model);
+    }
+
+    protected function getRawAttributes(?Model $parent)
+    {
+        $this->applyRelations();
+
+        return parent::getRawAttributes($parent);
+    }
+
+    protected function newInstance(array $arguments = [])
+    {
+        return tap(parent::newInstance($arguments), fn (self $factory) => $factory->relations = $this->relations);
     }
 }

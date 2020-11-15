@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Makeable\LaravelFactory\Concerns\PrototypesModels;
 
 class RelationRequest
 {
@@ -20,16 +19,16 @@ class RelationRequest
      *
      * @var Model
      */
-    protected $model;
+    protected string $model;
 
     /**
      * The batch number.
      *
      * @var int
      */
-    protected $batch;
+    protected int $batch;
 
-    protected $args;
+    protected Collection $arguments;
 
     /**
      * @var string|null
@@ -48,16 +47,16 @@ class RelationRequest
      *
      * @param $model
      * @param $batch
-     * @param mixed $args
+     * @param mixed $arguments
      */
-    public function __construct($model, $batch, $args)
+    public function __construct($model, $batch, $arguments)
     {
-        [$this->model, $this->batch, $this->args] = [$model, $batch, $args];
+        [$this->model, $this->batch, $this->arguments] = [$model, $batch, collect($arguments)];
 
-        $this->findAndPopRelationName($this->args);
-        $this->failOnMissingRelation($this->args);
+        $this->findAndPopRelationName();
+        $this->failOnMissingRelation();
 
-//        collect($args)
+//        collect($arguments)
 //            ->pipe(Closure::fromCallable([$this, 'findAndPopRelationName']))
 //            ->tap(Closure::fromCallable([$this, 'failOnMissingRelation']));
 //            ->each(Closure::fromCallable([$this, 'parseArgument']));
@@ -73,13 +72,13 @@ class RelationRequest
         return new static(
             $this->getRelatedClass(),
             $this->batch,
-            Arr::prepend($this->args, $this->getNestedPath())
+            $this->arguments->values()->push($this->getNestedPath())
         );
     }
 
-    public function getArguments(): array
+    public function getArguments(): Collection
     {
-        return $this->args;
+        return $this->arguments;
     }
 
     /**
@@ -142,13 +141,10 @@ class RelationRequest
 
     /**
      * Loop through arguments to detect a relation name.
-     *
-     * @param Collection $args
-     * @return Collection
      */
-    protected function findAndPopRelationName(Collection $args)
+    protected function findAndPopRelationName()
     {
-        return $args->reject(function ($arg) {
+        $this->arguments->reject(function ($arg) {
             if ($match = (is_string($arg) && $this->isValidRelation($arg))) {
                 $this->path = $arg;
             }
@@ -233,17 +229,15 @@ class RelationRequest
 
     /**
      * Fail build with a readable exception message.
-     *
-     * @param Collection $args
      */
-    protected function failOnMissingRelation(Collection $args)
+    protected function failOnMissingRelation()
     {
         if (! $this->path) {
             throw new BadMethodCallException(
                 'No matching relations could be found on model ['.$this->model.']. '.
                 'Following possible relation names was checked: '.
                 (
-                    ($testedRelations = $this->getPossiblyIntendedRelationships($args))->isEmpty()
+                    ($testedRelations = $this->getPossiblyIntendedRelationships())->isEmpty()
                         ? '[NO POSSIBLE RELATION NAMES FOUND]'
                         : '['.$testedRelations->implode(', ').']'
                 )
@@ -252,16 +246,15 @@ class RelationRequest
     }
 
     /**
-     * Give the developer a readable list of possibly args
+     * Give the developer a readable list of possibly arguments
      * that they might have intended could be a relation,
      * but was invalid. Helpful for debugging purposes.
      *
-     * @param Collection $args
-     * @return string
+     * @return Collection
      */
-    protected function getPossiblyIntendedRelationships(Collection $args)
+    protected function getPossiblyIntendedRelationships()
     {
-        return $args
+        return $this->arguments
             ->filter(function ($arg) {
                 return is_string($arg) || is_null($arg);
             })

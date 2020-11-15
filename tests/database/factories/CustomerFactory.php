@@ -17,6 +17,8 @@ class CustomerFactory extends Factory
 
     public function happy()
     {
-        return ['satisfaction' => 5];
+        return $this->state([
+            'satisfaction' => 5
+        ]);
     }
 }

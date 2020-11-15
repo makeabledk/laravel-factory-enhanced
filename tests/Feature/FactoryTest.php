@@ -80,17 +80,17 @@ class FactoryTest extends TestCase
 //        $this->assertInstanceOf(Collection::class, User::factory()->odds('100%', $createTwice)->create());
 //    }
 
-    /** @test **/
-    public function a_builder_can_be_tapped()
-    {
-        $createTwice = function ($builder) {
-            $builder->times(2);
-        };
-
-        $this->assertInstanceOf(Collection::class,
-            User::factory()->tap($createTwice)->create()
-        );
-    }
+//    /** @test **/
+//    public function a_builder_can_be_tapped()
+//    {
+//        $createTwice = function ($builder) {
+//            $builder->times(2);
+//        };
+//
+//        $this->assertInstanceOf(Collection::class,
+//            User::factory()->tap($createTwice)->create()
+//        );
+//    }
 
     /** @test **/
     public function it_executes_defined_after_callbacks()
@@ -101,8 +101,7 @@ class FactoryTest extends TestCase
             })
             ->afterCreating(function ($department) {
                 $department->forceFill(['flagship' => 1]);
-            })
-            ->make();
+            });
 
         $this->assertEquals(1, ($made = $factory->make())->active);
         $this->assertEquals(0, $made->flagship);

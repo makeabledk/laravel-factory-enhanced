@@ -19,7 +19,9 @@ class CompanyFactory extends Factory
 
     public function startup()
     {
-        return [];
+        return $this->state([
+            //
+        ]);
 
         return $this
             ->with(1, 'departments')
@@ -28,10 +30,10 @@ class CompanyFactory extends Factory
 
     public function withOwner()
     {
-        return [
+        return $this->state([
             'owner_id' => function () {
                 return User::factory()->create()->id;
             },
-        ];
+        ]);
     }
 }

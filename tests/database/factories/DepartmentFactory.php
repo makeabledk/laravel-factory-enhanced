@@ -19,17 +19,23 @@ class DepartmentFactory extends Factory
 
     public function active()
     {
-        return ['active' => 1];
+        return $this->state([
+            'active' => 1
+        ]);
     }
 
     public function flagship()
     {
-        return ['flagship' => 1];
+        return $this->state([
+            'flagship' => 1
+        ]);
     }
 
     public function mediumSized()
     {
-        return [];
+        return $this->state([
+            //
+        ]);
 //        return $this
 //            ->with(1, 'manager')
 //            ->with(4, 'employees');

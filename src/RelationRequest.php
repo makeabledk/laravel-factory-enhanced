@@ -6,12 +6,19 @@ use BadMethodCallException;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class RelationRequest
 {
+    public const HasMany = 'has';
+    public const BelongsToMany = 'hasAttached';
+    public const BelongsTo = 'for';
+
 //    use PrototypesModels;
 
     /**
@@ -21,19 +28,11 @@ class RelationRequest
      */
     protected string $model;
 
-    /**
-     * The batch number.
-     *
-     * @var int
-     */
-    protected int $batch;
+    public int $batch;
 
-    protected Collection $arguments;
+    public Collection $arguments;
 
-    /**
-     * @var string|null
-     */
-    protected $cachedRelatedClass;
+    protected ? Relation $cachedRelation;
 
     /**
      * The (possibly nested) relations path.
@@ -53,7 +52,7 @@ class RelationRequest
     {
         [$this->model, $this->batch, $this->arguments] = [$model, $batch, collect($arguments)];
 
-        $this->findAndPopRelationName();
+        $this->extractRelationFromArguments();
         $this->failOnMissingRelation();
 
 //        collect($arguments)
@@ -74,19 +73,6 @@ class RelationRequest
             $this->batch,
             $this->arguments->values()->push($this->getNestedPath())
         );
-    }
-
-    public function getArguments(): Collection
-    {
-        return $this->arguments;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBatch()
-    {
-        return $this->batch;
     }
 
     /**
@@ -111,9 +97,14 @@ class RelationRequest
      */
     public function getRelatedClass()
     {
+        return get_class($this->getRelation()->getRelated());
+    }
+
+    protected function getRelation()
+    {
         $relation = $this->getRelationName();
 
-        return $this->cachedRelatedClass ??= get_class($this->model()->$relation()->getRelated());
+        return $this->cachedRelation ??= $this->newModel()->$relation();
     }
 
     /**
@@ -129,6 +120,23 @@ class RelationRequest
         return array_shift($nested);
     }
 
+    public function loadMethod()
+    {
+        if ($this->getRelation() instanceof BelongsToMany) {
+            return static::BelongsToMany;
+        }
+
+        if ($this->getRelation() instanceof BelongsTo) {
+            return static::BelongsTo;
+        }
+
+        if ($this->getRelation() instanceof HasMany) {
+            return static::HasMany;
+        }
+
+        throw new BadMethodCallException('Unsupported relation type '.get_class($this->getRelation()));
+    }
+
     /**
      * Check if has nesting.
      *
@@ -142,7 +150,7 @@ class RelationRequest
     /**
      * Loop through arguments to detect a relation name.
      */
-    protected function findAndPopRelationName()
+    protected function extractRelationFromArguments()
     {
         $this->arguments->reject(function ($arg) {
             if ($match = (is_string($arg) && $this->isValidRelation($arg))) {
@@ -161,7 +169,7 @@ class RelationRequest
      */
     protected function isValidRelation($path)
     {
-        $model = $this->model();
+        $model = $this->newModel();
         $relation = $this->getRelationName($path);
 
         return method_exists($model, $relation) && $model->$relation() instanceof Relation;
@@ -170,7 +178,7 @@ class RelationRequest
     /**
      * @return Model
      */
-    protected function model()
+    protected function newModel()
     {
         return new $this->model;
     }

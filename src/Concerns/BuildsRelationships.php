@@ -40,26 +40,54 @@ trait BuildsRelationships
         }
 
         // Apply the request onto the final relationship factory.
-        $factory->apply(...$request->getArguments());
+        $factory->apply(...$request->arguments);
 
         return $this;
     }
 
     protected function buildFactoryForRequest(RelationRequest $request): Factory
     {
-        $relation = $request->getRelationName();
-        $batch = $request->getBatch();
+        $path = implode('.', [
+            $request->loadMethod(),
+            $request->getRelationName(),
+            $request->batch,
+        ]);
 
-        return data_get($this->relations, "{$relation}.{$batch}", function () use ($request, $relation, $batch) {
-            return tap(static::factoryForModel($request->getRelatedClass()), function ($factory) use ($relation, $batch) {
-                $this->relations[$relation][$batch] = $factory;
-            });
+        return data_get($this->relations, $path) ?? tap(static::factoryForModel($request->getRelatedClass()), function ($factory) use ($path) {
+            data_set($this->relations, $path, $factory);
         });
+//
+//        $relation = $request->getRelationName();
+//        $batch = $request->batch;
+//
+//        return data_get($this->relations, "{$relation}.{$batch}", function () use ($request, $relation, $batch) {
+//            return tap(static::factoryForModel($request->getRelatedClass()), function ($factory) use ($relation, $batch) {
+//                $this->relations[$relation][$batch] = $factory;
+//            });
+//        });
     }
 
-    protected function applyRelations()
+    protected function withRelationsApplied(Closure $callback)
     {
-        dd('ok');
+//        $previous = [$this->has, $this->for];
+
+        $self = $this;
+
+        foreach ($this->relations as $method => $relations) {
+            foreach ($relations as $relationship => $factories) {
+                foreach ($factories as $batch => $factory) {
+                    $args = $method === RelationRequest::BelongsToMany
+                        ? [$factory, [], $relationship] // , $factory->pivotAttributes()
+                        : [$factory, $relationship];
+
+                    $self = $self->$method(...$args);
+                }
+            }
+        }
+
+        return call_user_func($callback->bindTo($self));
+
+//        return tap($callback->bindTo($self), fn () => [$this->has, $this->for] = $previous);
     }
 
 //
@@ -124,27 +152,27 @@ trait BuildsRelationships
 //            });
 //    }
 
-    /**
-     * Get closure that checks for a given relation-type.
-     *
-     * @param $relationType
-     * @return Closure
-     */
-    protected function relationTypeIs($relationType)
-    {
-        return function ($batches, $relation) use ($relationType) {
-            return $this->newRelation($relation) instanceof $relationType;
-        };
-    }
-
-    /**
-     * @param $relationName
-     * @return Relation
-     */
-    protected function newRelation($relationName)
-    {
-        return (new $this->class)->$relationName();
-    }
+//    /**
+//     * Get closure that checks for a given relation-type.
+//     *
+//     * @param $relationType
+//     * @return Closure
+//     */
+//    protected function relationTypeIs($relationType)
+//    {
+//        return function ($batches, $relation) use ($relationType) {
+//            return $this->newRelation($relation) instanceof $relationType;
+//        };
+//    }
+//
+//    /**
+//     * @param $relationName
+//     * @return Relation
+//     */
+//    protected function newRelation($relationName)
+//    {
+//        return $this->newModel()->$relationName();
+//    }
 
 //    /**
 //     * Inherit connection from a parent factory.

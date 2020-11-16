@@ -11,19 +11,17 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 
     public static function factoryForModel($modelName)
     {
-        $factory = method_exists($modelName, 'newFactory')
-            ? $modelName::newFactory()
-            : null;
-
-        if ($factory === null) {
-            $factory = static::resolveFactoryName($modelName);
+        if (method_exists($modelName, 'newFactory') && ($factory = $modelName::newFactory())) {
+            return $factory;
         }
+
+        $factory = static::resolveFactoryName($modelName);
 
         if (is_string($factory) && class_exists($factory)) {
             return $factory::new();
         }
 
-        return tap(self::new(), fn ($factory) => $factory->model = $modelName);
+        return tap(Factory::new(), fn ($factory) => $factory->model = $modelName);
     }
 
     public function definition()
@@ -70,16 +68,12 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 
     protected function createChildren(Model $model)
     {
-        $this->applyRelations();
-
-        parent::createChildren($model);
+        $this->withRelationsApplied(fn () => parent::createChildren($model));
     }
 
     protected function getRawAttributes(?Model $parent)
     {
-        $this->applyRelations();
-
-        return parent::getRawAttributes($parent);
+        return $this->withRelationsApplied(fn () => parent::getRawAttributes($parent));
     }
 
     protected function newInstance(array $arguments = [])

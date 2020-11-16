@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Traits\Tappable;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 
 class Factory extends \Illuminate\Database\Eloquent\Factories\Factory

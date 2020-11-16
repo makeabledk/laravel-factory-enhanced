@@ -29,8 +29,7 @@ class ArgumentParser
                 return call_user_func([$factory, $arg]);
             }
 
-            throw new \BadMethodCallException('Unexpected argument: '. $arg);
-
+            throw new \BadMethodCallException('Unexpected argument: '.$arg);
 //
 //            if (is_string($arg) && $this->isValidRelation($arg)) {
 //                $this->path = $arg;
@@ -65,5 +64,4 @@ class ArgumentParser
 //    {
 
 //    }
-
 }

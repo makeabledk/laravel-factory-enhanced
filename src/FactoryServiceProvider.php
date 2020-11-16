@@ -19,7 +19,7 @@ class FactoryServiceProvider extends ServiceProvider
     public function provides()
     {
         return [
-//            Factory::class,
+            //            Factory::class,
         ];
     }
 }

@@ -4,5 +4,4 @@ namespace Makeable\LaravelFactory;
 
 class ArgumentParser
 {
-
 }

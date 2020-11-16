@@ -31,7 +31,6 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 
     public function apply(...$args): self
     {
-
         return $this;
     }
 

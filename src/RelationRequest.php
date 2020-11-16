@@ -32,7 +32,7 @@ class RelationRequest
 
     public Collection $arguments;
 
-    protected ? Relation $cachedRelation;
+    protected ?Relation $cachedRelation;
 
     /**
      * The (possibly nested) relations path.

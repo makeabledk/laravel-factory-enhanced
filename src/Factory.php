@@ -3,6 +3,7 @@
 namespace Makeable\LaravelFactory;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Traits\Tappable;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 
 class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
@@ -31,8 +32,9 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 
     public function apply(...$args): self
     {
+        return ArgumentParser::apply(collect($args), $this);
 
-        return $this;
+//        return $this;
     }
 
     public function fill($attributes)
@@ -64,6 +66,13 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
     public function andWith(...$args): self
     {
         return $this->newBatch()->with(...$args);
+    }
+
+    public function tap(callable $callback): self
+    {
+        $result = call_user_func($callback);
+
+        return $result instanceof self ? $result : $this;
     }
 
     protected function createChildren(Model $model)

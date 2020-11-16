@@ -32,7 +32,7 @@ trait BuildsRelationships
      */
     public function loadRelation(RelationRequest $request): self
     {
-        $factory = $this->buildFactoryForRequest($request);
+        $factory = $this->stashRelatedFactory($request);
 
         // Recursively create factories until no further nesting.
         if ($request->hasNesting()) {
@@ -40,12 +40,12 @@ trait BuildsRelationships
         }
 
         // Apply the request onto the final relationship factory.
-        $factory->apply(...$request->arguments);
+        $this->stashRelatedFactory($request, $factory->apply(...$request->arguments));
 
         return $this;
     }
 
-    protected function buildFactoryForRequest(RelationRequest $request): Factory
+    protected function stashRelatedFactory(RelationRequest $request, self $factory = null): Factory
     {
         $path = implode('.', [
             $request->loadMethod(),
@@ -53,19 +53,25 @@ trait BuildsRelationships
             $request->batch,
         ]);
 
-        return data_get($this->relations, $path) ?? tap(static::factoryForModel($request->getRelatedClass()), function ($factory) use ($path) {
-            data_set($this->relations, $path, $factory);
-        });
-//
-//        $relation = $request->getRelationName();
-//        $batch = $request->batch;
-//
-//        return data_get($this->relations, "{$relation}.{$batch}", function () use ($request, $relation, $batch) {
-//            return tap(static::factoryForModel($request->getRelatedClass()), function ($factory) use ($relation, $batch) {
-//                $this->relations[$relation][$batch] = $factory;
-//            });
-//        });
+        $factory = $factory
+            ?? data_get($this->relations, $path)
+            ?? static::factoryForModel($request->getRelatedClass());
+
+        return tap($factory, fn () => data_set($this->relations, $path, $factory));
     }
+
+//    protected function buildFactoryForRequest(RelationRequest $request): Factory
+//    {
+//        $path = implode('.', [
+//            $request->loadMethod(),
+//            $request->getRelationName(),
+//            $request->batch,
+//        ]);
+//
+//        return data_get($this->relations, $path) ?? tap(static::factoryForModel($request->getRelatedClass()), function ($factory) use ($path) {
+//            data_set($this->relations, $path, $factory);
+//        });
+//    }
 
     protected function withRelationsApplied(Closure $callback)
     {

@@ -152,7 +152,7 @@ class RelationRequest
      */
     protected function extractRelationFromArguments()
     {
-        $this->arguments->reject(function ($arg) {
+        $this->arguments = $this->arguments->reject(function ($arg) {
             if ($match = (is_string($arg) && $this->isValidRelation($arg))) {
                 $this->path = $arg;
             }
@@ -182,58 +182,6 @@ class RelationRequest
     {
         return new $this->model;
     }
-
-//    /**
-//     * Parse each individual argument given to 'with'.
-//     *
-//     * @param mixed $arg
-//     * @return void
-//     */
-//    protected function parseArgument($arg)
-//    {
-//        if (is_null($arg)) {
-//            return;
-//        }
-//
-//        if (is_numeric($arg)) {
-//            $this->amount = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_array($arg) && ! isset($arg[0])) {
-//            $this->attributes = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_callable($arg) && ! is_string($arg)) {
-//            $this->builder = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_string($arg) && $this->isValidRelation($arg)) {
-//            $this->path = $arg;
-//
-//            return;
-//        }
-//
-//        if (is_string($arg) && $this->stateManager->definitionExists($this->getRelatedClass(), $arg)) {
-//            $this->definition = $arg;
-//
-//            return;
-//        }
-//
-//        if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
-//            $this->presets = array_merge($this->presets, Arr::wrap($arg));
-//
-//            return;
-//        }
-//
-//        // If nothing else, we'll assume $arg represent some state.
-//        return $this->states = array_merge($this->states, Arr::wrap($arg));
-//    }
 
     /**
      * Fail build with a readable exception message.

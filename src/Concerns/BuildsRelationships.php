@@ -36,7 +36,9 @@ trait BuildsRelationships
 
         // Recursively create factories until no further nesting.
         if ($request->hasNesting()) {
-            return $this->loadRelation($request->createNestedRequest());
+            $this->stashRelatedFactory($request, $factory->loadRelation($request->createNestedRequest()));
+
+            return $this;
         }
 
         // Apply the request onto the final relationship factory.
@@ -82,6 +84,8 @@ trait BuildsRelationships
         foreach ($this->relations as $method => $relations) {
             foreach ($relations as $relationship => $factories) {
                 foreach ($factories as $batch => $factory) {
+//                    dump([$method, $relationship, $batch, get_class($factory)]);
+
                     $args = $method === RelationRequest::BelongsToMany
                         ? [$factory, [], $relationship] // , $factory->pivotAttributes()
                         : [$factory, $relationship];

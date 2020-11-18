@@ -8,9 +8,10 @@ use Makeable\LaravelFactory\Concerns\BuildsRelationships;
 
 class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 {
-    use BuildsRelationships;
+    use BuildsRelationships,
+        Tappable;
 
-    public static function factoryForModel($modelName)
+    public static function factoryForModel($modelName): self
     {
         if (method_exists($modelName, 'newFactory') && ($factory = $modelName::newFactory())) {
             return $factory;
@@ -22,7 +23,7 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
             return $factory::new();
         }
 
-        return tap(Factory::new(), fn ($factory) => $factory->model = $modelName);
+        return Factory::new()->tap(fn ($factory) => $factory->model = $modelName);
     }
 
     public function definition()
@@ -33,13 +34,16 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
     public function apply(...$args): self
     {
         return ArgumentParser::apply(collect($args), $this);
-
-//        return $this;
     }
 
-    public function fill($attributes)
+    public function fill($attributes): self
     {
         return $this->state($attributes);
+    }
+
+    public function fillPivot($attributes): self
+    {
+        return $this->newInstance()->tap(fn (self $factory) => array_push($factory->pivot, $attributes));
     }
 
     /**
@@ -68,11 +72,9 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
         return $this->newBatch()->with(...$args);
     }
 
-    public function tap(callable $callback): self
+    public function pipe(callable $callback)
     {
-        $result = call_user_func($callback);
-
-        return $result instanceof self ? $result : $this;
+        return call_user_func($callback, $this);
     }
 
     protected function createChildren(Model $model)
@@ -87,6 +89,10 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 
     protected function newInstance(array $arguments = [])
     {
-        return tap(parent::newInstance($arguments), fn (self $factory) => $factory->relations = $this->relations);
+        return parent::newInstance($arguments)->tap(function (self $factory) {
+            $factory->relations = $this->relations;
+            $factory->pivot = $this->pivot;
+            $factory->model = $this->model;
+        });
     }
 }

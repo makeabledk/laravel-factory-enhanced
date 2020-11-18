@@ -14,15 +14,11 @@ use Makeable\LaravelFactory\RelationRequest;
 
 trait BuildsRelationships
 {
-    /**
-     * The current batch no.
-     */
     protected int $currentBatch = 0;
 
-    /**
-     * Requested relations.
-     */
     protected array $relations = [];
+
+    protected array $pivot = [];
 
     /**
      * Load a RelationRequest onto current FactoryBuilder.
@@ -32,22 +28,22 @@ trait BuildsRelationships
      */
     public function loadRelation(RelationRequest $request): self
     {
-        $factory = $this->stashRelatedFactory($request);
+        $related = $this->pushRelatedFactory($request);
 
         // Recursively create factories until no further nesting.
         if ($request->hasNesting()) {
-            $this->stashRelatedFactory($request, $factory->loadRelation($request->createNestedRequest()));
+            $this->pushRelatedFactory($request, $related->loadRelation($request->createNestedRequest()));
 
             return $this;
         }
 
         // Apply the request onto the final relationship factory.
-        $this->stashRelatedFactory($request, $factory->apply(...$request->arguments));
+        $this->pushRelatedFactory($request, $related->apply(...$request->arguments));
 
         return $this;
     }
 
-    protected function stashRelatedFactory(RelationRequest $request, self $factory = null): Factory
+    protected function pushRelatedFactory(RelationRequest $request, self $factory = null): Factory
     {
         $path = implode('.', [
             $request->loadMethod(),
@@ -86,8 +82,16 @@ trait BuildsRelationships
                 foreach ($factories as $batch => $factory) {
 //                    dump([$method, $relationship, $batch, get_class($factory)]);
 
+                    if ($method === 'for') {
+                        $factory = $factory->count(null);
+                    }
+
+                    if ($this->connection) {
+                        $factory = $factory->connection($this->connection);
+                    }
+
                     $args = $method === RelationRequest::BelongsToMany
-                        ? [$factory, [], $relationship] // , $factory->pivotAttributes()
+                        ? [$factory, $factory->mergedPivotAttributes(), $relationship]
                         : [$factory, $relationship];
 
                     $self = $self->$method(...$args);
@@ -98,6 +102,15 @@ trait BuildsRelationships
         return call_user_func($callback->bindTo($self));
 
 //        return tap($callback->bindTo($self), fn () => [$this->has, $this->for] = $previous);
+    }
+
+    protected function mergedPivotAttributes()
+    {
+        return function (Model $model) {
+            return collect($this->pivot)->reduce(function ($merged, $pivot) use ($model) {
+                return array_merge($merged, is_callable($pivot) ? call_user_func($pivot, $model) : $pivot);
+            }, []);
+        };
     }
 
 //

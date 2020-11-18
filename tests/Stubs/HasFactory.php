@@ -4,7 +4,7 @@ namespace Makeable\LaravelFactory\Tests\Stubs;
 
 trait HasFactory
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+    use \Makeable\LaravelFactory\HasFactory;
 
     /**
      * Create a new factory instance for the model.
@@ -15,6 +15,8 @@ trait HasFactory
     {
         $name = "\\Makeable\\LaravelFactory\\Tests\\Database\\Factories\\".class_basename(static::class)."Factory";
 
-        return new $name;
+        if (class_exists($name)) {
+            return new $name;
+        }
     }
 }

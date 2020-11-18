@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -130,7 +131,7 @@ class RelationRequest
             return static::BelongsTo;
         }
 
-        if ($this->getRelation() instanceof HasMany) {
+        if ($this->getRelation() instanceof HasOneOrMany) {
             return static::HasMany;
         }
 

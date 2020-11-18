@@ -2,11 +2,13 @@
 
 namespace Makeable\LaravelFactory;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class ArgumentParser
 {
-    public static function apply(Collection $arguments, Factory $factory)
+    public static function apply(Collection $arguments, Factory $factory): Factory
     {
         return $arguments->reduce(function (Factory $factory, $arg) {
             if (is_null($arg)) {
@@ -18,11 +20,15 @@ class ArgumentParser
             }
 
             if (is_array($arg) && ! isset($arg[0])) {
-                return $factory->fill($arg);
+                return static::fill($factory, $arg);
             }
 
             if (is_callable($arg) && ! is_string($arg)) {
-                return $factory->tap($arg);
+                return tap($factory->pipe($arg), function ($result) {
+                    if (! $result instanceof Factory) {
+                        throw new \BadMethodCallException("Closures must return a Factory instance"); // Todo - change?
+                    }
+                });
             }
 
             if (method_exists($factory, $arg)) {
@@ -53,6 +59,23 @@ class ArgumentParser
 //            // If nothing else, we'll assume $arg represent some state.
 //            return $this->states = array_merge($this->states, Arr::wrap($arg));
         }, $factory);
+    }
+
+    protected static function fill(Factory $factory, array $attributes)
+    {
+        $pivotAttributes = [];
+
+        foreach ($attributes as $attribute => $value) {
+            if (Str::startsWith($attribute, 'pivot.')) {
+                $pivotAttributes[Str::after($attribute, 'pivot.')] = $value;
+
+                Arr::forget($attributes, $attribute);
+            }
+        }
+
+        return $factory
+            ->fill($attributes)
+            ->fillPivot($pivotAttributes);
     }
 
 //    /**

@@ -2,13 +2,18 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
+use PHPUnit\Framework\Assert;
 
 class RelationsTest extends TestCase
 {
@@ -30,7 +35,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_models_with_has_many_relations()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with(2, 'departments')
             ->create();
 
@@ -42,7 +47,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_models_with_morph_many_relations()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with('logo')
             ->create();
 
@@ -53,7 +58,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_models_with_belongs_to_many_relations()
     {
-        $department = $this->factory(Department::class)
+        $department = Department::factory()
             ->with(2, 'employees')
             ->create();
 
@@ -64,7 +69,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_models_with_multiple_relations()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with('owner')
             ->with(2, 'departments')
             ->create();
@@ -78,14 +83,25 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_related_models_on_the_same_connection()
     {
-        factory(Company::class)
+        $queries = [];
+
+        DB::listen(function (QueryExecuted $e) use (&$queries) {
+            $queries[$e->connectionName][] = $e->sql;
+        });
+
+        Company::factory()
             ->connection('secondary')
+            ->for(User::factory(), 'owner')
             ->with('owner') // belongs-to
             ->with(1, 'departments') // has-many
             ->with(1, 'departments.employees') // belongs-to-many
             ->create();
 
+        $this->assertNull(data_get($queries, 'primary'));
+        $this->assertCount(5, data_get($queries, 'secondary'));
+
         $company = Company::on('secondary')->with('owner', 'departments.employees')->latest()->first();
+//        $company = Company::on('secondary')->with('owner')->latest()->first(); //, 'departments.employees')->latest()->first();
 
         $this->assertInstanceOf(User::class, $company->owner);
         $this->assertEquals(1, $company->departments->count());
@@ -95,7 +111,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function the_same_relation_can_be_created_multiple_times_using_andWith()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with('owner')
             ->with(1, 'departments')
             ->andWith(1, 'departments.manager')
@@ -109,7 +125,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function additional_attributes_can_be_passed_inline_for_relations()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with(1, 'departments', ['active' => 1])
             ->with('departments.manager', ['password' => 'foobar'])
             ->create();
@@ -123,14 +139,14 @@ class RelationsTest extends TestCase
     {
         $this->expectException(\BadMethodCallException::class);
         $this->expectExceptionMessageMatches('/invalidRelation/');
-        $this->factory(Company::class)->with(1, 'invalidRelation')->create();
+        Company::factory()->with(1, 'invalidRelation')->create();
     }
 
     /** @test **/
     public function it_accepts_pivot_attributes_on_belongs_to_many_relations()
     {
-        $department = $this->factory(Department::class)->with(1, 'employees', function ($employee) {
-            $employee->fillPivot(['started_at' => '2019-01-01 00:00:00']);
+        $department = Department::factory()->with(1, 'employees', function ($employee) {
+            return $employee->fillPivot(['started_at' => '2019-01-01 00:00:00']);
         })->create();
 
         $employees = $department->employees()->withPivot('started_at')->get();
@@ -144,11 +160,12 @@ class RelationsTest extends TestCase
     {
         [$i, $dates] = [0, [now()->subMonth(), now()->subDay()]];
 
-        $department = $this->factory(Department::class)->with(2, 'employees', function ($employee) use ($dates, &$i) {
-            $employee->fillPivot(function ($faker) use ($dates, &$i) {
-                return ['started_at' => $dates[$i++]];
-            });
-        })->create();
+        $department = Department::factory()
+            ->with(2, 'employees', function ($employee) use ($dates, &$i) {
+                return $employee->fillPivot(function (Department $department) use ($dates, &$i) {
+                    return ['started_at' => $dates[$i++]];
+                });
+            })->create();
 
         $employees = $department->employees()->withPivot('started_at')->get();
 
@@ -160,7 +177,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function regression_null_arguments_will_parse_as_state_and_then_ignored()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with(1, 'departments', null)
             ->create();
 
@@ -172,7 +189,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function it_creates_models_with_nested_relations()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with('owner')
             ->with('departments.manager')
             ->create();
@@ -184,11 +201,11 @@ class RelationsTest extends TestCase
     /** @test **/
     public function nested_relations_can_be_built_by_closures()
     {
-        $company = $this->factory(Company::class)
-            ->with('departments', function (FactoryBuilder $departments) {
-                $departments
+        $company = Company::factory()
+            ->with('departments', function (Factory $departments) {
+                return $departments
                     ->fill(['name' => 'foo'])
-                    ->times(2)
+                    ->count(2)
                     ->with('manager');
             })
             ->create();
@@ -205,7 +222,7 @@ class RelationsTest extends TestCase
     /** @test **/
     public function nested_relations_can_be_specified_separate_function_calls()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with('owner')
             ->with(1, 'departments')
             ->with(1, 'departments.manager')

@@ -8,10 +8,8 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class RelationRequest
@@ -33,7 +31,7 @@ class RelationRequest
 
     public Collection $arguments;
 
-    protected ? Relation $cachedRelation;
+    protected ?Relation $cachedRelation;
 
     /**
      * The (possibly nested) relations path.

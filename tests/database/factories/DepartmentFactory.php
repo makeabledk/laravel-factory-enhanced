@@ -19,14 +19,14 @@ class DepartmentFactory extends Factory
     public function active()
     {
         return $this->state([
-            'active' => 1
+            'active' => 1,
         ]);
     }
 
     public function flagship()
     {
         return $this->state([
-            'flagship' => 1
+            'flagship' => 1,
         ]);
     }
 

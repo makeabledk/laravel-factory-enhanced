@@ -2,18 +2,15 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Makeable\LaravelFactory\Factory;
-use Makeable\LaravelFactory\FactoryBuilder;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
-use PHPUnit\Framework\Assert;
 
 class RelationsTest extends TestCase
 {

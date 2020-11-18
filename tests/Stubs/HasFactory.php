@@ -13,7 +13,7 @@ trait HasFactory
      */
     protected static function newFactory()
     {
-        $name = "\\Makeable\\LaravelFactory\\Tests\\Database\\Factories\\".class_basename(static::class)."Factory";
+        $name = '\\Makeable\\LaravelFactory\\Tests\\Database\\Factories\\'.class_basename(static::class).'Factory';
 
         if (class_exists($name)) {
             return new $name;

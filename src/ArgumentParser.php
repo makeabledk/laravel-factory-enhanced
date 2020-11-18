@@ -26,7 +26,7 @@ class ArgumentParser
             if (is_callable($arg) && ! is_string($arg)) {
                 return tap($factory->pipe($arg), function ($result) {
                     if (! $result instanceof Factory) {
-                        throw new \BadMethodCallException("Closures must return a Factory instance"); // Todo - change?
+                        throw new \BadMethodCallException('Closures must return a Factory instance'); // Todo - change?
                     }
                 });
             }
@@ -35,8 +35,7 @@ class ArgumentParser
                 return call_user_func([$factory, $arg]);
             }
 
-            throw new \BadMethodCallException('Unexpected argument: '. $arg);
-
+            throw new \BadMethodCallException('Unexpected argument: '.$arg);
 //
 //            if (is_string($arg) && $this->isValidRelation($arg)) {
 //                $this->path = $arg;
@@ -88,5 +87,4 @@ class ArgumentParser
 //    {
 
 //    }
-
 }

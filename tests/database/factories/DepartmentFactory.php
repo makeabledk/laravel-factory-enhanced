@@ -32,11 +32,8 @@ class DepartmentFactory extends Factory
 
     public function mediumSized()
     {
-        return $this->state([
-            //
-        ]);
-//        return $this
-//            ->with(1, 'manager')
-//            ->with(4, 'employees');
+        return $this
+            ->with(1, 'manager')
+            ->with(4, 'employees');
     }
 }

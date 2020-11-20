@@ -31,8 +31,8 @@ class ArgumentParser
                 });
             }
 
-            if (method_exists($factory, $arg)) {
-                return call_user_func([$factory, $arg]);
+            if (is_string($arg) || (is_array($arg) && is_string($arg[0]))) {
+                return collect($arg)->reduce(fn ($factory, $method) => call_user_func([$factory, $method]), $factory);
             }
 
             throw new \BadMethodCallException('Unexpected argument: '.$arg);

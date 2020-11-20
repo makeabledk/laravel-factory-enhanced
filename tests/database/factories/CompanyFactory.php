@@ -19,10 +19,6 @@ class CompanyFactory extends Factory
 
     public function startup()
     {
-        return $this->state([
-            //
-        ]);
-
         return $this
             ->with(1, 'departments')
             ->with(1, 'departments.employees');

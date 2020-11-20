@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use InvalidArgumentException;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\User;

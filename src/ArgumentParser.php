@@ -55,19 +55,4 @@ class ArgumentParser
             ->fill($attributes)
             ->fillPivot($pivotAttributes);
     }
-<<<<<<< 971e2f101926a2aa6ee10985d87d37209628ef56
-
-//    /**
-//     * Parse each individual argument given to 'with'.
-//     *
-//     * @param mixed $arg
-//     * @return void
-//     */
-//    protected function parseArgument($arg)
-//    {
-
-//    }
 }
-=======
-}
->>>>>>> wip

@@ -9,11 +9,6 @@ class CustomerFactory extends Factory
 {
     protected $model = Customer::class;
 
-    public function definition()
-    {
-        return [];
-    }
-
     public function happy()
     {
         return $this->state([

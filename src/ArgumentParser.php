@@ -35,28 +35,7 @@ class ArgumentParser
                 return collect($arg)->reduce(fn ($factory, $method) => call_user_func([$factory, $method]), $factory);
             }
 
-            throw new \BadMethodCallException('Unexpected argument: '.$arg);
-//
-//            if (is_string($arg) && $this->isValidRelation($arg)) {
-//                $this->path = $arg;
-//
-//                return;
-//            }
-//
-//            if (is_string($arg) && $this->stateManager->definitionExists($this->getRelatedClass(), $arg)) {
-//                $this->definition = $arg;
-//
-//                return;
-//            }
-//
-//            if ($this->stateManager->presetsExists($this->getRelatedClass(), $arg)) {
-//                $this->presets = array_merge($this->presets, Arr::wrap($arg));
-//
-//                return;
-//            }
-//
-//            // If nothing else, we'll assume $arg represent some state.
-//            return $this->states = array_merge($this->states, Arr::wrap($arg));
+            throw new \InvalidArgumentException('Unexpected argument: '. $arg);
         }, $factory);
     }
 
@@ -76,6 +55,7 @@ class ArgumentParser
             ->fill($attributes)
             ->fillPivot($pivotAttributes);
     }
+<<<<<<< 971e2f101926a2aa6ee10985d87d37209628ef56
 
 //    /**
 //     * Parse each individual argument given to 'with'.
@@ -88,3 +68,6 @@ class ArgumentParser
 
 //    }
 }
+=======
+}
+>>>>>>> wip

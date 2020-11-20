@@ -21,13 +21,13 @@ class StateTest extends TestCase
         $this->assertEquals(5, $customer->satisfaction);
     }
 
-//    /** @test **/
-//    public function it_filters_null_states()
-//    {
-//        $customer = Customer::factory()->state(null)->create();
-//
-//        $this->assertInstanceOf(Customer::class, $customer);
-//    }
+    /** @test **/
+    public function it_filters_null_args()
+    {
+        $customer = Customer::factory()->apply(null)->create();
+
+        $this->assertInstanceOf(Customer::class, $customer);
+    }
 
     /** @test **/
     public function it_throws_exception_when_missing_state()

@@ -35,7 +35,7 @@ class ArgumentParser
                 return collect($arg)->reduce(fn ($factory, $method) => call_user_func([$factory, $method]), $factory);
             }
 
-            throw new \InvalidArgumentException('Unexpected argument: '. $arg);
+            throw new \InvalidArgumentException('Unexpected argument: '.$arg);
         }, $factory);
     }
 

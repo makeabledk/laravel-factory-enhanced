@@ -3,8 +3,6 @@
 namespace Makeable\LaravelFactory;
 
 use BadMethodCallException;
-use Closure;
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,12 +16,8 @@ class RelationRequest
     public const BelongsToMany = 'hasAttached';
     public const BelongsTo = 'for';
 
-//    use PrototypesModels;
-
     /**
      * The parent model requesting relations.
-     *
-     * @var Model
      */
     protected string $model;
 
@@ -53,11 +47,6 @@ class RelationRequest
 
         $this->extractRelationFromArguments();
         $this->failOnMissingRelation();
-
-//        collect($arguments)
-//            ->pipe(Closure::fromCallable([$this, 'findAndPopRelationName']))
-//            ->tap(Closure::fromCallable([$this, 'failOnMissingRelation']));
-//            ->each(Closure::fromCallable([$this, 'parseArgument']));
     }
 
     /**

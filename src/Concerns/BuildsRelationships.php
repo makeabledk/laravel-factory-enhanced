@@ -58,30 +58,13 @@ trait BuildsRelationships
         return tap($factory, fn () => data_set($this->relations, $path, $factory));
     }
 
-//    protected function buildFactoryForRequest(RelationRequest $request): Factory
-//    {
-//        $path = implode('.', [
-//            $request->loadMethod(),
-//            $request->getRelationName(),
-//            $request->batch,
-//        ]);
-//
-//        return data_get($this->relations, $path) ?? tap(static::factoryForModel($request->getRelatedClass()), function ($factory) use ($path) {
-//            data_set($this->relations, $path, $factory);
-//        });
-//    }
-
     protected function withRelationsApplied(Closure $callback)
     {
-//        $previous = [$this->has, $this->for];
-
         $self = $this;
 
         foreach ($this->relations as $method => $relations) {
             foreach ($relations as $relationship => $factories) {
                 foreach ($factories as $batch => $factory) {
-//                    dump([$method, $relationship, $batch, get_class($factory)]);
-
                     if ($method === 'for') {
                         $factory = $factory->count(null);
                     }
@@ -100,8 +83,6 @@ trait BuildsRelationships
         }
 
         return call_user_func($callback->bindTo($self));
-
-//        return tap($callback->bindTo($self), fn () => [$this->has, $this->for] = $previous);
     }
 
     protected function mergedPivotAttributes()
@@ -112,103 +93,6 @@ trait BuildsRelationships
             }, []);
         };
     }
-
-//
-//    /**
-//     * Create all requested BelongsTo relations.
-//     *
-//     * @param Model $child
-//     */
-//    protected function createBelongsTo($child)
-//    {
-//        collect($this->relations)
-//            ->filter($this->relationTypeIs(BelongsTo::class))
-//            ->each(function ($batches, $relation) use ($child) {
-//                foreach (array_slice($batches, 0, 1) as $factory) {
-//                    $parent = $this->collectModel($factory->inheritConnection($this)->create());
-//                    $child->$relation()->associate($parent);
-//                }
-//            });
-//    }
-//
-//    /**
-//     * Create all requested BelongsToMany relations.
-//     *
-//     * @param Model $sibling
-//     */
-//    protected function createBelongsToMany($sibling)
-//    {
-//        collect($this->relations)
-//            ->filter($this->relationTypeIs(BelongsToMany::class))
-//            ->each(function ($batches, $relation) use ($sibling) {
-//                foreach ($batches as $factory) {
-//                    $models = $this->collect($factory->inheritConnection($this)->create());
-//                    $models->each(function ($model) use ($sibling, $relation, $factory) {
-//                        $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
-//                    });
-//                }
-//            });
-//    }
-//
-//    /**
-//     * Create all requested HasMany relations.
-//     *
-//     * @param Model $parent
-//     */
-//    protected function createHasMany($parent)
-//    {
-//        collect($this->relations)
-//            ->filter($this->relationTypeIs(HasOneOrMany::class))
-//            ->each(function ($batches, $relation) use ($parent) {
-//                foreach ($batches as $factory) {
-//                    // In case of morphOne / morphMany we'll need to set the morph type as well.
-//                    if (($morphRelation = $this->newRelation($relation)) instanceof MorphOneOrMany) {
-//                        $factory->fill([
-//                            $morphRelation->getMorphType() => (new $this->class)->getMorphClass(),
-//                        ]);
-//                    }
-//
-//                    $factory->inheritConnection($this)->create([
-//                        $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey(),
-//                    ]);
-//                }
-//            });
-//    }
-
-//    /**
-//     * Get closure that checks for a given relation-type.
-//     *
-//     * @param $relationType
-//     * @return Closure
-//     */
-//    protected function relationTypeIs($relationType)
-//    {
-//        return function ($batches, $relation) use ($relationType) {
-//            return $this->newRelation($relation) instanceof $relationType;
-//        };
-//    }
-//
-//    /**
-//     * @param $relationName
-//     * @return Relation
-//     */
-//    protected function newRelation($relationName)
-//    {
-//        return $this->newModel()->$relationName();
-//    }
-
-//    /**
-//     * Inherit connection from a parent factory.
-//     *
-//     * @param $factory
-//     * @return FactoryBuilder
-//     */
-//    protected function inheritConnection($factory)
-//    {
-//        if ($this->connection === null && (new $this->class)->getConnectionName() === null) {
-//            return $this->connection($factory->connection);
-//        }
-//    }
 
     protected function newBatch(): self
     {

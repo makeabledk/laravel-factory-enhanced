@@ -2,7 +2,6 @@
 
 namespace Makeable\LaravelFactory;
 
-
 trait HasFactory
 {
     /**

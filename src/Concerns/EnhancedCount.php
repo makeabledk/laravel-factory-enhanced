@@ -3,12 +3,11 @@
 namespace Makeable\LaravelFactory\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
-use Makeable\LaravelFactory\Factory;
 
 trait EnhancedCount
 {
     /**
-     * Overwrite core method to allow closures
+     * Overwrite core method to allow closures.
      *
      * @param  int|callable|null  $count
      * @return $this
@@ -31,7 +30,6 @@ trait EnhancedCount
     protected function withCalculatedCount(\Closure $callback)
     {
         $backup = $this->count;
-
 
         if (is_callable($this->count)) {
             $this->count = call_user_func($this->count);

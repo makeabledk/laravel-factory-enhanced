@@ -21,6 +21,32 @@ trait BuildsRelationships
     protected array $pivot = [];
 
     /**
+     * Build the model with specified relations.
+     *
+     * @param mixed ...$args
+     * @return static
+     */
+    public function with(...$args): self
+    {
+        return $this->loadRelation(
+            new RelationRequest($this->model, $this->currentBatch, $args)
+        );
+    }
+
+    /**
+     * Build relations in a new batch. Multiple batches can be
+     * created on the same relation, so that ie. multiple
+     * has-many relations can be configured differently.
+     *
+     * @param mixed ...$args
+     * @return static
+     */
+    public function andWith(...$args): self
+    {
+        return $this->newBatch()->with(...$args);
+    }
+
+    /**
      * Load a RelationRequest onto current FactoryBuilder.
      *
      * @param  \Makeable\LaravelFactory\RelationRequest  $request
@@ -85,7 +111,7 @@ trait BuildsRelationships
         return call_user_func($callback->bindTo($self));
     }
 
-    protected function mergedPivotAttributes()
+    protected function mergedPivotAttributes(): Closure
     {
         return function (Model $model) {
             return collect($this->pivot)->reduce(function ($merged, $pivot) use ($model) {
@@ -99,5 +125,17 @@ trait BuildsRelationships
         $this->currentBatch++;
 
         return $this;
+    }
+
+    // Core method overwrites
+
+    protected function createChildren(Model $model)
+    {
+        $this->withRelationsApplied(fn () => parent::createChildren($model));
+    }
+
+    protected function getRawAttributes(?Model $parent)
+    {
+        return $this->withRelationsApplied(fn () => parent::getRawAttributes($parent));
     }
 }

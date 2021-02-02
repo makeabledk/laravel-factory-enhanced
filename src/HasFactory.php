@@ -2,7 +2,6 @@
 
 namespace Makeable\LaravelFactory;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 trait HasFactory
 {
@@ -10,7 +9,7 @@ trait HasFactory
      * Get a new factory instance for the model.
      *
      * @param  mixed  $parameters
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \Makeable\LaravelFactory\Factory
      */
     public static function factory(...$parameters)
     {

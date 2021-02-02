@@ -2,14 +2,15 @@
 
 namespace Makeable\LaravelFactory;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Traits\Tappable;
 use Makeable\LaravelFactory\Concerns\BuildsRelationships;
+use Makeable\LaravelFactory\Concerns\EnhancedCount;
 
 class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 {
     use BuildsRelationships,
-        Tappable;
+        EnhancedCount;
+
+    protected bool $mutating = false;
 
     public static function factoryForModel($modelName): self
     {
@@ -26,14 +27,14 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
         return Factory::new()->tap(fn ($factory) => $factory->model = $modelName);
     }
 
-    public function definition()
-    {
-        return [];
-    }
-
     public function apply(...$args): self
     {
         return ArgumentParser::apply(collect($args), $this);
+    }
+
+    public function definition()
+    {
+        return [];
     }
 
     public function fill($attributes): self
@@ -46,49 +47,32 @@ class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
         return $this->newInstance()->tap(fn (self $factory) => array_push($factory->pivot, $attributes));
     }
 
-    /**
-     * Build the model with specified relations.
-     *
-     * @param mixed ...$args
-     * @return static
-     */
-    public function with(...$args): self
-    {
-        return $this->loadRelation(
-            new RelationRequest($this->model, $this->currentBatch, $args)
-        );
-    }
-
-    /**
-     * Build relations in a new batch. Multiple batches can be
-     * created on the same relation, so that ie. multiple
-     * has-many relations can be configured differently.
-     *
-     * @param mixed ...$args
-     * @return static
-     */
-    public function andWith(...$args): self
-    {
-        return $this->newBatch()->with(...$args);
-    }
-
-    public function pipe(callable $callback)
+    public function pipe(callable $callback): self
     {
         return call_user_func($callback, $this);
     }
 
-    protected function createChildren(Model $model)
+    public function tap($callback = null): self
     {
-        $this->withRelationsApplied(fn () => parent::createChildren($model));
-    }
+        $this->mutating = true;
 
-    protected function getRawAttributes(?Model $parent)
-    {
-        return $this->withRelationsApplied(fn () => parent::getRawAttributes($parent));
+        call_user_func($callback, $this);
+
+        $this->mutating = false;
+
+        return $this;
     }
 
     protected function newInstance(array $arguments = [])
     {
+        if ($this->mutating) {
+            foreach ($arguments as $argument => $value) {
+                $this->$argument = $value;
+            }
+
+            return $this;
+        }
+
         return parent::newInstance($arguments)->tap(function (self $factory) {
             $factory->relations = $this->relations;
             $factory->pivot = $this->pivot;

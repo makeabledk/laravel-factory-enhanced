@@ -24,11 +24,7 @@ class ArgumentParser
             }
 
             if (is_callable($arg) && ! is_string($arg)) {
-                return tap($factory->pipe($arg), function ($result) {
-                    if (! $result instanceof Factory) {
-                        throw new \BadMethodCallException('Closures must return a Factory instance'); // Todo - change?
-                    }
-                });
+                return $factory->tap($arg);
             }
 
             if (is_string($arg) || (is_array($arg) && is_string($arg[0]))) {
@@ -39,7 +35,7 @@ class ArgumentParser
         }, $factory);
     }
 
-    protected static function fill(Factory $factory, array $attributes)
+    protected static function fill(Factory $factory, array $attributes): Factory
     {
         $pivotAttributes = [];
 

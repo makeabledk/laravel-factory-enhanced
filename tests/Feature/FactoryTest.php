@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
@@ -54,6 +55,15 @@ class FactoryTest extends TestCase
             ->make(['name' => 'Evil corp']);
 
         $this->assertEquals('secondary', $company->getConnectionName());
+    }
+
+    /** @test **/
+    public function it_supports_a_closure_for_count()
+    {
+        $companies = Company::factory()->count(new Sequence(1, 2));
+
+        $this->assertEquals(1, $companies->make()->count());
+        $this->assertEquals(2, $companies->make()->count());
     }
 
 //    /** @test **/

@@ -9,18 +9,19 @@ namespace {
     }
 }
 
-
 namespace Makeable\LaravelFactory {
-    function count($count) {
+    function count($count)
+    {
         return fn (Factory $factory) => $factory->count($count);
     }
 
-    function fill($attributes) {
+    function fill($attributes)
+    {
         return fn (Factory $factory) => $factory->fill($attributes);
     }
 
-    function sequence($sequence) {
+    function sequence($sequence)
+    {
         return fn (Factory $factory) => $factory->sequence($sequence);
     }
 }
-

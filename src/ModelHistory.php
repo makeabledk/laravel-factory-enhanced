@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 
 class ModelHistory
 {
-    protected ? Collection $history;
+    protected ?Collection $history;
 
     public function get($modelClass): Collection
     {
@@ -15,7 +15,6 @@ class ModelHistory
 
     public function track($models)
     {
-
         $models = $models instanceof Collection ? $models : collect([$models]);
 
         if ($models->count()) {

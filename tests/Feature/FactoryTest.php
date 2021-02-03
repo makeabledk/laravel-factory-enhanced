@@ -2,7 +2,6 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
-use Cassandra\Custom;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;

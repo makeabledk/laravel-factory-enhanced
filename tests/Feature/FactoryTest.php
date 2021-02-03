@@ -67,7 +67,6 @@ class FactoryTest extends TestCase
         $this->assertEquals(2, $companies->make()->count());
     }
 
-
 //    /** @test **/
 //    public function it_applies_closures_when_a_condition_is_met()
 //    {

@@ -11,6 +11,7 @@ use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
+use function Makeable\LaravelFactory\latest;
 
 class RelationsTest extends TestCase
 {
@@ -228,6 +229,34 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $company->departments->count());
         $this->assertInstanceOf(User::class, $company->departments->first()->manager);
     }
+//
+//    /** @test **/
+//    public function the_current_helper_may_be_used_to_access_previous_created_models()
+//    {
+//        $companies = Company::factory()
+//            ->with('owner')
+//            ->with(1, 'departments', function ($d) {
+//                $d->state(fn () => dd(func_get_args()));
+//            }) // The last "User" instance created was the owner
+////            ->with(1, 'departments', ['manager_id' => latest(User::class)]) // The last "User" instance created was the owner
+//            ->count(2)
+//            ->create()
+//            ->load('owner', 'departments.manager');
+//
+//
+////        dd($companies->load('owner', 'departments.manager')->toArray());
+//
+//        dd($companies->toArray());
+//
+//        $this->assertEquals(data_get($companies, '0.owner.id'), data_get($companies, '0.departments.0.manager.id'));
+//
+////            $companies->get(0)->owner->id, $companies->get(0)->departments->first()->manager->id);
+////        $this->assertEquals($companies->get(1)->owner->id, $companies->get(1)->departments->first()->manager->id);
+////
+////        // Assert they are not the same
+////        $this->assertEquals($companies->get(0)->owner->id + 1, $companies->get(1)->departments->first()->manager->id);
+//    }
+
 
     /** @test **/
     public function regression_parent_model_is_available_as_second_argument()

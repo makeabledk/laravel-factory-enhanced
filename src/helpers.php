@@ -1,10 +1,27 @@
 <?php
 
-use Makeable\LaravelFactory\Factory;
+namespace Makeable\LaravelFactory;
 
-if (! function_exists('factory')) {
-    function factory($model, ...$arguments)
-    {
-        return Factory::factoryForModel($model)->apply(...$arguments);
-    }
+use Facades\Makeable\LaravelFactory\ModelHistory as ModelHistory;
+use Illuminate\Database\Eloquent\Model;
+
+function factory($modelClass, ...$arguments): Factory
+{
+    return Factory::factoryForModel($modelClass)->apply(...$arguments);
+}
+//
+//function current($modelClass): \Closure
+//{
+//    return fn () => latest($modelClass);
+//}
+
+function latest($modelClass): \Closure
+{
+    return function () use ($modelClass) {
+        $result = ModelHistory::get($modelClass)->last();
+
+        dump('Getting '.$modelClass.': '.$result->id);
+
+        return $result;
+    };
 }

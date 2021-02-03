@@ -5,12 +5,14 @@ namespace Makeable\LaravelFactory;
 use Makeable\LaravelFactory\Concerns\EnhancedRelationships;
 use Makeable\LaravelFactory\Concerns\EnhancedCount;
 use Makeable\LaravelFactory\Concerns\EnhancedSequence;
+use Makeable\LaravelFactory\Concerns\TracksCreatedModels;
 
 class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 {
     use EnhancedCount,
         EnhancedRelationships,
         EnhancedSequence;
+//        TracksCreatedModels;
 
     protected bool $mutating = false;
 

@@ -3,6 +3,7 @@
 namespace Makeable\LaravelFactory\Concerns;
 
 use Closure;
+use Facades\Makeable\LaravelFactory\ModelHistory;
 use Illuminate\Database\Eloquent\Model;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\RelationRequest;
@@ -126,6 +127,8 @@ trait EnhancedRelationships
 
     protected function createChildren(Model $model)
     {
+//        ModelHistory::track($model);
+
         $this->withRelationsApplied(fn () => parent::createChildren($model));
     }
 

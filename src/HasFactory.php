@@ -12,6 +12,6 @@ trait HasFactory
      */
     public static function factory(...$parameters)
     {
-        return factory(static::class, ...$parameters);
+        return Factory::factoryForModel(static::class)->apply(...$parameters);
     }
 }

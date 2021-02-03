@@ -19,12 +19,12 @@ trait EnhancedCount
 
     public function make($attributes = [], ?Model $parent = null)
     {
-        return $this->withCalculatedCount(fn () => parent::make(...func_get_args()));
+        return $this->withCalculatedCount(fn () => parent::make($attributes, $parent));
     }
 
     public function raw($attributes = [], ?Model $parent = null)
     {
-        return $this->withCalculatedCount(fn () => parent::raw(...func_get_args()));
+        return $this->withCalculatedCount(fn () => parent::raw($attributes, $parent));
     }
 
     protected function withCalculatedCount(\Closure $callback)

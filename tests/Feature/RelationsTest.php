@@ -228,4 +228,30 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $company->departments->count());
         $this->assertInstanceOf(User::class, $company->departments->first()->manager);
     }
+
+    /** @test **/
+    public function regression_parent_model_is_available_as_second_argument()
+    {
+        // Laravel syntax
+        $company = Company::factory()
+            ->has(
+                Department::factory()
+                    ->count(2)
+                    ->state(function (array $attributes, Company $company) {
+                        return ['name' => $company->name.': Department'];
+                    })
+            )
+            ->create();
+
+        $this->assertStringContainsString($company->name, $company->departments->first()->name);
+
+        // Enhanced syntax
+        $company = Company::factory()
+            ->with(2, 'departments', function ($builder) {
+                $builder->fill(fn ($department, $company) => ['name' => $company->name.': Department']);
+            })
+            ->create();
+
+        $this->assertStringContainsString($company->name, $company->departments->first()->name);
+    }
 }

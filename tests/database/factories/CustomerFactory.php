@@ -15,4 +15,11 @@ class CustomerFactory extends Factory
             'satisfaction' => 5,
         ]);
     }
+
+    public function unhappy()
+    {
+        return $this->state([
+            'satisfaction' => 1,
+        ]);
+    }
 }

@@ -2,13 +2,15 @@
 
 namespace Makeable\LaravelFactory;
 
-use Makeable\LaravelFactory\Concerns\BuildsRelationships;
+use Makeable\LaravelFactory\Concerns\EnhancedRelationships;
 use Makeable\LaravelFactory\Concerns\EnhancedCount;
+use Makeable\LaravelFactory\Concerns\EnhancedSequence;
 
 class Factory extends \Illuminate\Database\Eloquent\Factories\Factory
 {
-    use BuildsRelationships,
-        EnhancedCount;
+    use EnhancedCount,
+        EnhancedRelationships,
+        EnhancedSequence;
 
     protected bool $mutating = false;
 

@@ -4,11 +4,10 @@ namespace Makeable\LaravelFactory\Concerns;
 
 use Closure;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Makeable\LaravelFactory\Factory;
 use Makeable\LaravelFactory\RelationRequest;
 
-trait BuildsRelationships
+trait EnhancedRelationships
 {
     protected int $currentBatch = 0;
 
@@ -46,7 +45,7 @@ trait BuildsRelationships
      * Load a RelationRequest onto current FactoryBuilder.
      *
      * @param  \Makeable\LaravelFactory\RelationRequest  $request
-     * @return \Makeable\LaravelFactory\Concerns\BuildsRelationships
+     * @return \Makeable\LaravelFactory\Concerns\EnhancedRelationships
      */
     public function loadRelation(RelationRequest $request): self
     {

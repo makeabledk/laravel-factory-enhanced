@@ -2,6 +2,8 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
+use Cassandra\Custom;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
@@ -66,6 +68,16 @@ class FactoryTest extends TestCase
         $this->assertEquals(2, $companies->make()->count());
     }
 
+    /** @test **/
+    public function it_supports_giving_method_name_as_sequence_option()
+    {
+        $customer = Customer::factory()->sequence('happy', 'unhappy', ['satisfaction' => 3]);
+
+        $this->assertEquals(5, $customer->make()->satisfaction);
+        $this->assertEquals(1, $customer->make()->satisfaction);
+        $this->assertEquals(3, $customer->make()->satisfaction);
+    }
+
 //    /** @test **/
 //    public function it_applies_closures_when_a_condition_is_met()
 //    {
@@ -97,17 +109,15 @@ class FactoryTest extends TestCase
 //        $this->assertInstanceOf(Collection::class, User::factory()->odds('100%', $createTwice)->create());
 //    }
 
-//    /** @test **/
-//    public function a_builder_can_be_tapped()
-//    {
-//        $createTwice = function ($builder) {
-//            $builder->times(2);
-//        };
-//
-//        $this->assertInstanceOf(Collection::class,
-//            User::factory()->tap($createTwice)->create()
-//        );
-//    }
+    /** @test **/
+    public function a_builder_can_be_tapped()
+    {
+        $createTwice = function ($builder) {
+            $builder->count(2);
+        };
+
+        $this->assertInstanceOf(Collection::class, User::factory()->tap($createTwice)->create());
+    }
 
     /** @test **/
     public function it_executes_defined_after_callbacks()

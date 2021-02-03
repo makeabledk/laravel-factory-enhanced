@@ -6,16 +6,16 @@ use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use function Makeable\LaravelFactory\count as count;
 use Makeable\LaravelFactory\Factory;
+use function Makeable\LaravelFactory\fill;
+use function Makeable\LaravelFactory\inherit;
+use function Makeable\LaravelFactory\sequence as sequence;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
-use function Makeable\LaravelFactory\count as count;
-use function Makeable\LaravelFactory\fill;
-use function Makeable\LaravelFactory\inherit;
-use function Makeable\LaravelFactory\sequence as sequence;
 
 class RelationsTest extends TestCase
 {

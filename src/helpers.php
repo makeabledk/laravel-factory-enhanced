@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory;
 
 use Facades\Makeable\LaravelFactory\ModelHistory as ModelHistory;
-use Illuminate\Database\Eloquent\Model;
 
 function factory($modelClass, ...$arguments): Factory
 {

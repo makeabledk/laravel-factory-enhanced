@@ -2,8 +2,8 @@
 
 namespace Makeable\LaravelFactory;
 
-use Makeable\LaravelFactory\Concerns\EnhancedRelationships;
 use Makeable\LaravelFactory\Concerns\EnhancedCount;
+use Makeable\LaravelFactory\Concerns\EnhancedRelationships;
 use Makeable\LaravelFactory\Concerns\EnhancedSequence;
 use Makeable\LaravelFactory\Concerns\TracksCreatedModels;
 

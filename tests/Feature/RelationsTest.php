@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory\Tests\Feature;
 
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,10 @@ use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
+use function Makeable\LaravelFactory\count as count;
+use function Makeable\LaravelFactory\fill;
+use function Makeable\LaravelFactory\inherit;
+use function Makeable\LaravelFactory\sequence as sequence;
 
 class RelationsTest extends TestCase
 {
@@ -98,7 +103,6 @@ class RelationsTest extends TestCase
         $this->assertCount(5, data_get($queries, 'secondary'));
 
         $company = Company::on('secondary')->with('owner', 'departments.employees')->latest()->first();
-//        $company = Company::on('secondary')->with('owner')->latest()->first(); //, 'departments.employees')->latest()->first();
 
         $this->assertInstanceOf(User::class, $company->owner);
         $this->assertEquals(1, $company->departments->count());
@@ -181,6 +185,32 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $company->departments->count());
     }
 
+    /** @test **/
+    public function regression_parent_model_is_available_as_second_argument()
+    {
+        // Laravel syntax
+        $company = Company::factory()
+            ->has(
+                Department::factory()
+                    ->count(2)
+                    ->state(function (array $attributes, Company $company) {
+                        return ['name' => $company->name.': Department'];
+                    })
+            )
+            ->create();
+
+        $this->assertStringContainsString($company->name, $company->departments->first()->name);
+
+        // Enhanced syntax
+        $company = Company::factory()
+            ->with(2, 'departments', function ($builder) {
+                $builder->fill(fn ($department, $company) => ['name' => $company->name.': Department']);
+            })
+            ->create();
+
+        $this->assertStringContainsString($company->name, $company->departments->first()->name);
+    }
+
     // NESTED RELATIONS
 
     /** @test **/
@@ -229,29 +259,48 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(User::class, $company->departments->first()->manager);
     }
 
+    // HELPER FUNCTIONS
+
     /** @test **/
-    public function regression_parent_model_is_available_as_second_argument()
+    public function count_helper_may_be_used_for_dynamic_expressions()
     {
-        // Laravel syntax
-        $company = Company::factory()
-            ->has(
-                Department::factory()
-                    ->count(2)
-                    ->state(function (array $attributes, Company $company) {
-                        return ['name' => $company->name.': Department'];
-                    })
-            )
+        $companies = Company::factory()
+            ->count(2)
+            ->with(count(new Sequence(1, 2)), 'departments')
             ->create();
 
-        $this->assertStringContainsString($company->name, $company->departments->first()->name);
+        $this->assertEquals(1, $companies->first()->departments->count());
+        $this->assertEquals(2, $companies->last()->departments->count());
+    }
 
-        // Enhanced syntax
+    /** @test **/
+    public function fill_helper_may_be_used_to_access_parent()
+    {
         $company = Company::factory()
-            ->with(2, 'departments', function ($builder) {
-                $builder->fill(fn ($department, $company) => ['name' => $company->name.': Department']);
-            })
+            ->with(1, 'departments', fill(fn ($attributes, Company $parent) => ['name' => $parent->name]))
             ->create();
 
-        $this->assertStringContainsString($company->name, $company->departments->first()->name);
+        $this->assertEquals($company->name, $company->departments->first()->name);
+    }
+
+    /** @test **/
+    public function inherit_helper_may_be_used_to_fill_attributes_from_parent()
+    {
+        $company = Company::factory()
+            ->with(1, 'departments', inherit('name'))
+            ->create();
+
+        $this->assertEquals($company->name, $company->departments->first()->name);
+    }
+
+    /** @test **/
+    public function sequence_helper_may_be_used_to_apply_different_states()
+    {
+        $company = Company::factory()
+            ->with(2, 'customers', sequence('happy', 'unhappy'))
+            ->create();
+
+        $this->assertEquals(5, $company->customers->first()->satisfaction);
+        $this->assertEquals(1, $company->customers->last()->satisfaction);
     }
 }

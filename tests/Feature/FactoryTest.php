@@ -59,7 +59,7 @@ class FactoryTest extends TestCase
     }
 
     /** @test **/
-    public function it_supports_a_closure_for_count()
+    public function it_supports_giving_a_closure_as_count()
     {
         $companies = Company::factory()->count(new Sequence(1, 2));
 
@@ -67,15 +67,6 @@ class FactoryTest extends TestCase
         $this->assertEquals(2, $companies->make()->count());
     }
 
-    /** @test **/
-    public function it_supports_giving_method_name_as_sequence_option()
-    {
-        $customer = Customer::factory()->sequence('happy', 'unhappy', ['satisfaction' => 3]);
-
-        $this->assertEquals(5, $customer->make()->satisfaction);
-        $this->assertEquals(1, $customer->make()->satisfaction);
-        $this->assertEquals(3, $customer->make()->satisfaction);
-    }
 
 //    /** @test **/
 //    public function it_applies_closures_when_a_condition_is_met()

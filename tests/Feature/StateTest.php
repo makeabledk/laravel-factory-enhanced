@@ -93,4 +93,14 @@ class StateTest extends TestCase
         $this->assertEquals(2, $company->departments->first()->employees->count());
         $this->assertEquals(1, $company->departments->first()->active);
     }
+
+    /** @test **/
+    public function sequence_accepts_state_names()
+    {
+        $customer = Customer::factory()->sequence('happy', 'unhappy', ['satisfaction' => 3]);
+
+        $this->assertEquals(5, $customer->make()->satisfaction);
+        $this->assertEquals(1, $customer->make()->satisfaction);
+        $this->assertEquals(3, $customer->make()->satisfaction);
+    }
 }

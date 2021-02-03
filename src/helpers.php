@@ -19,8 +19,8 @@ namespace Makeable\LaravelFactory {
         return fn (Factory $factory) => $factory->fill($attributes);
     }
 
-    function sequence($sequence) {
-        return fn (Factory $factory) => $factory->sequence($sequence);
+    function sequence(...$sequence) {
+        return fn (Factory $factory) => $factory->sequence(...$sequence);
     }
 }
 

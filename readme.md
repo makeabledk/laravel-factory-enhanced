@@ -2,8 +2,8 @@
 
 # Laravel Factory Enhanced 🔥
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/makeabledk/laravel-factory-enhanced.svg?style=flat-square)](https://packagist.org/packages/makeabledk/laravel-factory-enhanced)
-[![Build Status](https://img.shields.io/travis/makeabledk/laravel-factory-enhanced/master.svg?style=flat-square)](https://travis-ci.org/makeabledk/laravel-factory-enhanced)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/makeabledk/laravel-factory-enhanced.svg)](https://packagist.org/packages/makeabledk/laravel-factory-enhanced)
+[![Build Status](https://img.shields.io/github/workflow/status/makeabledk/lravel-factory-enhanced/next?label=Tests)](https://travis-ci.org/makeabledk/laravel-factory-enhanced)
 [![StyleCI](https://styleci.io/repos/117680722/shield?branch=master)](https://styleci.io/repos/117680722)
 
 Bring the magic of eloquent relationships into the Laravel Factory. 

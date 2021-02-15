@@ -11,15 +11,15 @@
     },
     "require": {
         "php": "^7.4|8.*",
-        "illuminate/database": "^8.0",
-        "illuminate/support": "^8.0",
+        "illuminate/database": "^8.2",
+        "illuminate/support": "^8.2",
         "fzaninotto/faker": "^1.4"
     },
     "require-dev": {
-        "codedungeon/phpunit-result-printer": "^0.28.0",
+        "codedungeon/phpunit-result-printer": "^0.30.0",
         "doctrine/dbal": "^2.5",
         "mockery/mockery": "^1.3",
-        "laravel/laravel": "^8.0",
+        "laravel/laravel": "^8.2",
         "phpunit/phpunit": "^9.0"
     },
     "autoload-dev": {

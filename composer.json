@@ -17,7 +17,7 @@
     },
     "require-dev": {
         "codedungeon/phpunit-result-printer": "^0.30.0",
-        "doctrine/dbal": "^2.5",
+        "doctrine/dbal": "^3.0",
         "mockery/mockery": "^1.4.2",
         "laravel/laravel": "^8.2",
         "phpunit/phpunit": "^9.0"

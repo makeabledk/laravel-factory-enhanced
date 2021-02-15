@@ -10,7 +10,7 @@
         ]
     },
     "require": {
-        "php": "^7.4",
+        "php": "^7.4|8.*",
         "illuminate/database": "^8.0",
         "illuminate/support": "^8.0",
         "fzaninotto/faker": "^1.4"

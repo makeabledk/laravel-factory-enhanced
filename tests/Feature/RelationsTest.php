@@ -24,7 +24,7 @@ class RelationsTest extends TestCase
             ->create();
 
         $this->assertInstanceOf(Company::class, $company);
-        $this->assertEquals(1, $company->getRelation('owner')->id);
+        $this->assertEquals(1, $company->owner->id);
     }
 
     /** @test **/
@@ -35,7 +35,7 @@ class RelationsTest extends TestCase
             ->create();
 
         $this->assertInstanceOf(Company::class, $company);
-        $this->assertInstanceOf(Department::class, $company->getRelation('departments')->first());
+        $this->assertInstanceOf(Department::class, $company->departments->first());
         $this->assertEquals(2, $company->departments->count());
     }
 
@@ -47,7 +47,7 @@ class RelationsTest extends TestCase
             ->create();
 
         $this->assertInstanceOf(Company::class, $company);
-        $this->assertInstanceOf(Image::class, $company->getRelation('logo'));
+        $this->assertInstanceOf(Image::class, $company->logo);
     }
 
     /** @test **/
@@ -57,7 +57,7 @@ class RelationsTest extends TestCase
             ->with(2, 'employees')
             ->create();
 
-        $this->assertInstanceOf(User::class, $department->getRelation('employees')->first());
+        $this->assertInstanceOf(User::class, $department->employees->first());
         $this->assertEquals(2, $department->employees->count());
     }
 
@@ -100,9 +100,6 @@ class RelationsTest extends TestCase
             ->with(1, 'departments')
             ->andWith(1, 'departments.manager')
             ->create();
-
-        // We'll have to unset and re-fetch from the db as only the last relation will be set
-        $company->setRelations([]);
 
         $this->assertEquals(2, $company->departments->count());
         $this->assertNull($company->departments->first()->manager);

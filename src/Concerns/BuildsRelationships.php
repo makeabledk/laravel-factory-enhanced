@@ -93,13 +93,11 @@ trait BuildsRelationships
             ->filter($this->relationTypeIs(BelongsToMany::class))
             ->each(function ($batches, $relation) use ($sibling) {
                 foreach ($batches as $factory) {
-                    $results = $this
+                    $this
                         ->collect($factory->inheritConnection($this)->create())
                         ->map(function ($model) use ($sibling, $relation, $factory) {
                             return $sibling->$relation()->save($model, $this->mergeAndExpandAttributes($factory->pivotAttributes));
                         });
-
-                    $sibling->setRelation($relation, $results);
                 }
             });
     }
@@ -122,15 +120,9 @@ trait BuildsRelationships
                         ]);
                     }
 
-                    $results = $factory->inheritConnection($this)->create([
+                    $factory->inheritConnection($this)->create([
                         $parent->$relation()->getForeignKeyName() => $parent->$relation()->getParentKey(),
                     ]);
-
-                    $results = $relationClass instanceof MorphOne || $relationClass instanceof HasOne
-                        ? $this->collectModel($results)
-                        : $this->collect($results);
-
-                    $parent->setRelation($relation, $results);
                 }
             });
     }

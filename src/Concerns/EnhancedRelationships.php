@@ -18,7 +18,7 @@ trait EnhancedRelationships
     /**
      * Build the model with specified relations.
      *
-     * @param mixed ...$args
+     * @param  mixed  ...$args
      * @return static
      */
     public function with(...$args): self
@@ -33,7 +33,7 @@ trait EnhancedRelationships
      * created on the same relation, so that ie. multiple
      * has-many relations can be configured differently.
      *
-     * @param mixed ...$args
+     * @param  mixed  ...$args
      * @return static
      */
     public function andWith(...$args): self

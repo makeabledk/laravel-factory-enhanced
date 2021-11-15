@@ -39,7 +39,7 @@ class RelationRequest
      *
      * @param $model
      * @param $batch
-     * @param mixed $arguments
+     * @param  mixed  $arguments
      */
     public function __construct($model, $batch, $arguments)
     {
@@ -66,7 +66,7 @@ class RelationRequest
     /**
      * Get the nested path beyond immediate relation.
      *
-     * @param string|null $path
+     * @param  string|null  $path
      * @return string
      */
     public function getNestedPath($path = null)
@@ -98,7 +98,7 @@ class RelationRequest
     /**
      * Get the name of the immediate relation.
      *
-     * @param string|null $path
+     * @param  string|null  $path
      * @return mixed
      */
     public function getRelationName($path = null)

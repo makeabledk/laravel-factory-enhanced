@@ -12,12 +12,12 @@
     "require": {
         "php": "^7.4|8.*",
         "illuminate/database": "^8.2",
-        "illuminate/support": "^8.2",
-        "fzaninotto/faker": "^1.4"
+        "illuminate/support": "^8.2"
     },
     "require-dev": {
         "codedungeon/phpunit-result-printer": "^0.30.0",
         "doctrine/dbal": "^3.0",
+        "fakerphp/faker": "^1.4",
         "mockery/mockery": "^1.4.2",
         "laravel/laravel": "^8.2",
         "phpunit/phpunit": "^9.0"

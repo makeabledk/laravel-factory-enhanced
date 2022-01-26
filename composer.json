@@ -10,16 +10,16 @@
         ]
     },
     "require": {
-        "php": "^7.4|8.*",
-        "illuminate/database": "^8.2",
-        "illuminate/support": "^8.2"
+        "php": "^8.0",
+        "illuminate/database": "^8.80|^9.0",
+        "illuminate/support": "^8.80|^9.0"
     },
     "require-dev": {
         "codedungeon/phpunit-result-printer": "^0.30.0",
         "doctrine/dbal": "^3.0",
         "fakerphp/faker": "^1.4",
         "mockery/mockery": "^1.4.2",
-        "laravel/laravel": "^8.2",
+        "laravel/laravel": "^8.80|^9.0",
         "phpunit/phpunit": "^9.0"
     },
     "autoload-dev": {
@@ -36,9 +36,14 @@
         }
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true
+        }
     },
     "scripts": {
         "test": "./vendor/bin/phpunit"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

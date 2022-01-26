@@ -19,7 +19,7 @@
         "doctrine/dbal": "^3.0",
         "fakerphp/faker": "^1.4",
         "mockery/mockery": "^1.4.2",
-        "laravel/laravel": "^8.80|^9.0",
+        "laravel/laravel": "^8.0|^9.0",
         "phpunit/phpunit": "^9.0"
     },
     "autoload-dev": {

@@ -303,4 +303,15 @@ class RelationsTest extends TestCase
         $this->assertEquals(5, $company->customers->first()->satisfaction);
         $this->assertEquals(1, $company->customers->last()->satisfaction);
     }
+
+    /** @test **/
+    public function regression_it_doesnt_create_belongs_to_relations_when_given_a_count_of_zero()
+    {
+        $company = Company::factory()
+            ->with(0, 'owner')
+            ->create();
+
+        $this->assertInstanceOf(Company::class, $company);
+        $this->assertNull($company->owner);
+    }
 }

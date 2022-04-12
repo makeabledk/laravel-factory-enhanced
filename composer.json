@@ -15,7 +15,7 @@
         "illuminate/support": "^8.80|^9.0"
     },
     "require-dev": {
-        "codedungeon/phpunit-result-printer": "^0.30.0",
+        "codedungeon/phpunit-result-printer": "^0.32.0",
         "doctrine/dbal": "^3.0",
         "fakerphp/faker": "^1.4",
         "mockery/mockery": "^1.4.2",

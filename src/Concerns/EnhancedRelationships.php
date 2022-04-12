@@ -86,6 +86,10 @@ trait EnhancedRelationships
         foreach ($this->relations as $method => $relations) {
             foreach ($relations as $relationship => $factories) {
                 foreach ($factories as $batch => $factory) {
+                    if ($factory->count === 0) {
+                        continue;
+                    }
+
                     if ($method === 'for') {
                         $factory = $factory->count(null);
                     }

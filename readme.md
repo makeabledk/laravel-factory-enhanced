@@ -2,35 +2,46 @@
 
 # Laravel Factory Enhanced 🔥
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/makeabledk/laravel-factory-enhanced.svg?style=flat-square)](https://packagist.org/packages/makeabledk/laravel-factory-enhanced)
-[![Build Status](https://img.shields.io/travis/makeabledk/laravel-factory-enhanced/master.svg?style=flat-square)](https://travis-ci.org/makeabledk/laravel-factory-enhanced)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/makeabledk/laravel-factory-enhanced.svg)](https://packagist.org/packages/makeabledk/laravel-factory-enhanced)
+[![Build Status](https://img.shields.io/github/workflow/status/makeabledk/laravel-factory-enhanced/Run%20tests?label=Tests)](https://github.com/makeabledk/laravel-factory-enhanced/actions)
 [![StyleCI](https://styleci.io/repos/117680722/shield?branch=master)](https://styleci.io/repos/117680722)
 
 Bring the magic of eloquent relationships into the Laravel Factory. 
 
 Traditionally if you wanted to factory a team with some users, you'd have to manually create the individual team and users and then tie them together afterwards. This can easily lead to very verbose tests.
 
-**Before**
+**Laravel 7.x and earlier**
 
 ```php
 $team = factory(Team::class)->create();
-$user = factory(User::class)->create();
-$member = factory(TeamMember::class)->create([
-    'team_id' => $team,
-    'user_id' => $user,
-]);
+$users = factory(User::class)->times(2)->create();
+foreach ($users as $user) {
+    factory(TeamMember::class)->create([
+        'team_id' => $team,
+        'user_id' => $user,
+        'role' => 'admin'
+    ]);
+}
 ```
 
-**After**
+**Laravel 8.0 and later**
 
 ```php
-$team = factory(Team::class)->with(1, 'users')->create();
+$team = Team::factory()
+    ->hasAttached(
+        User::factory()->count(2),
+        ['active' => true]
+    )
+    ->create();
+
 ```
 
-How about 10 teams each with 3 users?
+**Laravel Factory Enhanced**
 
 ```php
-$team = factory(Team::class)->with(3, 'users')->times(10)->create();
+$team = Team::factory()
+    ->with(2, 'users', ['pivot.role' => 'admin'])
+    ->create();
 ```
 
 ## Installation
@@ -41,11 +52,103 @@ You may install the package via composer
 composer require makeabledk/laravel-factory-enhanced
 ```
 
-Installing on Laravel 5.5+ will automatically load the package service provider.
+
+### Versions
+
+**Laravel 8+ class based factories**
+
+Version 4 and later of this package is compatible with the new class-based syntax introduced with Laravel 8.
+
+**Pre-Laravel 7 factories**
+
+Version 3 and earlier of this package is compatible with the legacy `$factory->define()` syntax. Please find docs here [v3 documentation](https://github.com/makeabledk/laravel-factory-enhanced/tree/3.x):
+
+## Upgrade guide to v4
+
+The majority of the refactoring needed to upgrade to v4 of this package, lies in rewriting factories to be compatible with Laravel class-based factories. 
+
+If you use [Laravel Shift](https://laravelshift.com) when upgrading to Laravel 8, a lot of this work will be automated, and you will be well on you way.
+
+### Rewriting to class based factories
+
+Please use [Laravel Shift](https://laravelshift.com) for upgrading Laravel versions, or refer to the [official documentation](https://laravel.com/docs/8.x/database-testing) on how to write factories using the class-based approach.
+
+
+### Applying states
+
+Replace all occurrences of `->state('some-state')` with `->someState()` in your test suite.
+
+
+### Presets
+
+The concept of presets which was introduced by this package may now simply be rewritten to states.
+
+As such, replace all occurrences of `->preset('some-preset')` with `->somePreset()` in your test suite.
+
+
+### Times method
+
+Replace all occurrences of `->times(x)` with `->count(x)` in your test suite.
+
+
+### Factory helper syntax
+
+This change is completely optional. If you wish, you may change all occurrence of `factory(SomeModel::class)` to `SomeModel::factory()` in your test suite. 
+
+_If you choose to do so_, remember to add `use \Makeable\LaravelFactory\Factory;` to all models.
+
+
+### Other breaking changes
+
+The `odds()` method has been removed from the Factory instance.
+
 
 ## Usage
 
-Once the package is installed, you may use the `factory()` helper exactly as you normally would. Only now you have additional functionality at your disposal.
+Once the package is installed, your factories should extend `Makeable\LaravelFactory\Factory` rather than the native Laravel `Factory` class. 
+
+Additionally, please make sure to use the corresponding `Makeable\LaravelFactory\HasFactory` trait on your models.
+
+For example:
+
+**app/Models/User.php**
+
+```php
+<?php
+
+namespace App\Models;
+
+use Makeable\LaravelFactory\HasFactory;
+
+class User 
+{
+    use HasFactory;
+    
+    // ...
+}
+```
+
+**database/factories/UserFactory.php**
+
+```php
+<?php
+
+namespace Database\Factories;
+
+use Makeable\LaravelFactory\Factory;
+
+class UserFactory extends Factory
+{
+    public function definition()
+    {
+        return [
+            // ...
+        ];
+    }
+}
+```
+
+You may now use all the native Laravel features you are used to, along with the additional functionality this package provides.
 
 If you're not familiar with Laravel factories, please refer to the official documentation: https://laravel.com/docs/master/database-testing
 
@@ -56,13 +159,13 @@ You may use the enhanced factory to create any additional relationships defined 
 Example: A `Server` model with a `sites()` relationship (has-many)
 
 ```php
-factory(Server::class)->with(3, 'sites')->create();
+Server::factory()->with(3, 'sites')->create();
 ```
 
 Note that you may still use any native functionality that you are used to, such as states and attributes:
 
 ```php
-factory(Server::class)->states('online')->with(3, 'sites')->create([
+Server::factory()->online()->with(3, 'sites')->create([
     'name' => 'production-1'
 ]);
 ```
@@ -74,7 +177,7 @@ You are free to specify multiple relationships on the same factory.
 Given our previous `Server` model has another relationship called `team` (belongs-to), you may do:
 
 ```php
-factory(Server::class)
+Server::factory()
     ->with('team')
     ->with(3, 'sites')
     ->create();
@@ -90,7 +193,7 @@ Moving on to the more advanced use-cases, you may also do nested relationships.
 For instance we could rewrite our example from before using nesting:
 
 ```php
-factory(Team::class)
+Team::factory()
     ->with(3, 'servers.sites')
     ->create();
 ```
@@ -99,7 +202,7 @@ Please note that the count '3' applies to *the final relationship*, in this case
 If you are wanting 2 servers each of which has 3 sites, you may write it as following:
 
 ```php
-factory(Team::class)    
+Team::factory()    
     ->with(2, 'servers')
     ->with(3, 'servers.sites')
     ->create();
@@ -110,7 +213,7 @@ factory(Team::class)
 Just as you may specify pre-defined states on the factoring model ([see official documentation](https://laravel.com/docs/master/database-testing#factory-states)), you may also apply the very same states on the relation.
 
 ```php
-factory(Team::class)    
+Team::factory()    
     ->with(2, 'online', 'servers')
     ->create();
 ```
@@ -118,7 +221,7 @@ factory(Team::class)
 You may finding yourself wanting a relationship in multiple states. In this case you may use the `andWith()` method.
 
 ```php
-factory(Team::class)    
+Team::factory()    
     ->with(2, 'online', 'servers')
     ->andWith(1, 'offline', 'servers')
     ->create();
@@ -129,7 +232,7 @@ By using the `andWith` we will create a 'clean cut', so that no further calls to
 In the above example any further nesting of relations will apply to the 'offline' server.
 
 ```php
-factory(Team::class)    
+Team::factory()    
     ->with(2, 'online', 'servers')
     ->andWith(1, 'offline', 'servers')
     ->with(3, 'servers.sites')
@@ -141,6 +244,47 @@ The above example will create 1x team that has
 - 2x online servers
 - 1x offline servers with 3 sites
 
+### Filling attributes in relationships
+
+You may fill attributes on a relationship by passing them as an argument to the `with()` method.
+
+```php
+factory(Team::class)    
+    ->with(2, 'servers', ['name' => 'laravel.com'])
+    ->create();
+```
+
+If the relation is a belongs-to-many relationship, you may also fill attributes on the pivot model by prefixing the attribute name with `pivot.`.
+
+```php
+Team::factory()    
+    ->with(2, 'users', ['pivot.role' => 'admin'])
+    ->create();
+```
+
+### Using apply()
+
+All of the above examples of how you might configure a relationship using the `with()` method, can also be applied on the base model using the `apply()` method.
+
+For example:
+
+```php
+Server::factory()
+    ->apply(2, 'online', ['name' => 'laravel.com'])
+    ->with(3, 'mysql', 'databases')
+    ->create();
+```
+
+This would create 2 online servers each with 3 mysql databases.
+
+In fact, by using the `HasFactory` trait from this package, you can even pass these arguments to the `::factory()` method itself:
+
+```php
+Server::factory(2, 'online', ['name' => 'laravel.com'])
+    ->with(3, 'mysql', 'databases')
+    ->create();
+```
+
 ### Using closures for customization
 
 In addition to passing *count* and *state* directly into the `with` function, you may also pass a closure that will receive the `FactoryBuilder` instance directly.
@@ -148,121 +292,41 @@ In addition to passing *count* and *state* directly into the `with` function, yo
 In the closure you can do everything you are used to on the `FactoryBuilder` - including nesting further relationships should you wish to.
 
 ```php
-factory(Team::class)    
-    ->with('servers', function (FactoryBuilder $servers) {
-        $servers
-            ->times(2)
-            ->states('active')
-            ->with(3, 'sites');
+Team::factory()    
+    ->with('servers', fn (ServerFactory $servers) => $servers
+        ->count(2)
+        ->active()
+        ->with(3, 'sites');
     })
     ->create();
 ```
 
 
-### Introducing presets
+### Factoring models with no defined factory
 
-While we currently have `definitions` and `states` in Laravel, none of these allow us to reuse more higher level configurations such as “a user with 1 small team that has 2 employees”.
+Traditionally trying to use `Model::factory()` on a model with no defined factory would throw an exception. Not anymore!
 
-For this purpose a new preset definition is introduced, and works like this:
+After installing this package, you are completely free to use the static `Model::factory()` method on any Eloquent model that uses the `Makeable\LaravelFactory\HasFactory` trait.
 
-```php
-factory()->preset(User::class, 'businessOwner', function (FactoryBuilder $user, Generator $faker) {
-    $user
-        ->with(1, 'teams')
-        ->with(2, 'teams.employees');
-});
-```
+Furthermore, this package brings back the good old `factory(Model::class)` helper function which you may use on any model, whether or not the model has a defined factory or uses the `HasFactory` trait.
 
-Now we may use the factory to create a `User` using that preset:
+**Example**
 
 ```php
-factory(User::class)->preset('businessOwner')->create();
-```
-
-Or on the fly in a relation:
-
-```php
-factory(Invoice::class)->with('businessOwner', 'user')->create();
-```
-
-This is super powerful, as it allows you to make use of the full `FactoryBuilder`, instead of relying on it to only return attributes.
-
-
-## Examples
-
-### Creating random translations
-
-For seeding an entire development environment it can be useful with random relations. Here we may utilize the 'odds' helper.
-
-Consider the following example from a real-life project:
-
-```php
-$courses = Collection::times(5)->map(function () {
-    return factory(Course::class)
-        ->with(random_int(1, 5), 'chapters')
-        ->with(random_int(1, 5), 'chapters.videos')
-        ->odds('66%', function ($course) { // 66% of courses will be translated. 'Odds' also accepts decimals, ie 2/3
-            $course
-                ->with(1, 'danish', 'translations')
-                ->with(random_int(1, 5), 'translations.chapters')
-                ->with(random_int(1, 5), 'danish', 'translations.chapters.videos');
-        });
-});
-```
-
-With a few lines of code we have seeded several models in several random states. Pretty neat!
-
-### Factoring models with no definitions
-
-Traditionally trying to use `factory()` on a model with no defined model-factory would throw an exception. Not anymore!
-
-After installing this package, you are completely free to use `factory()` on any Eloquent model, whether or not you have defined a model factory.
-
-If need be, you may pass attributes inline through the `with` method or use the `fill` helper.
-
-**Passing attributes inline**
-
-```php
-factory(Server::class)->with(1, 'sites', ['name' => 'example.org'])->create();
-```
-
-**Using the `fill` method**
-
-```php
-factory(Server::class)->with(1, 'sites', function (FactoryBuilder $sites) {
-    $sites->fill(function (Faker $faker) { 
-        return [
-            'name' => $faker->name,
-        ];
-    });
-})->create();
+factory(2, Server::class)->with(1, 'sites')->create();
 ```
 
 ## Available methods
 
-These are the provided methods on the `FactoryBuilder` instance in addition to the core methods.
+These are the provided methods on the `Factory` instance in addition to the core methods.
 
+- apply
 - fill
 ->fillPivot (only applicable on BelongsToMany
-- odds
-- preset
-- presets
+- pipe
 - tap
-- when
 - with
 - andWith
-
-## Notice
-
-This package swaps the native factory implementation with it's own implementation. 
-
-While the public API is aimed to be 100% compatible with the core factory, new functionality may take a bit longer to become available. 
-
-We are happy to hear from you if you find anything missing.
-
-## Change log
-
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
 
 ## Testing
 

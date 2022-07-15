@@ -10,21 +10,22 @@
         ]
     },
     "require": {
-        "php": "^7.3|8.*",
-        "illuminate/database": "^6.0|^7.0|^8.0",
-        "illuminate/support": "^6.0|^7.0|^8.0",
-        "fzaninotto/faker": "^1.4"
+        "php": "^7.4|^8.0",
+        "illuminate/database": "^8.80|^9.0",
+        "illuminate/support": "^8.80|^9.0"
     },
     "require-dev": {
-        "codedungeon/phpunit-result-printer": "^0.30",
+        "codedungeon/phpunit-result-printer": "^0.32.0",
         "doctrine/dbal": "^3.0",
-        "mockery/mockery": "^1.4",
-        "laravel/laravel": "^6.0|^7.0|^8.0",
-        "phpunit/phpunit": "^8.5.3|^9.0"
+        "fakerphp/faker": "^1.4",
+        "mockery/mockery": "^1.4.2",
+        "laravel/laravel": "^8.0|^9.0",
+        "phpunit/phpunit": "^9.0"
     },
     "autoload-dev": {
         "psr-4": {
-            "Makeable\\LaravelFactory\\Tests\\": "tests/"
+            "Makeable\\LaravelFactory\\Tests\\": "tests/",
+            "Makeable\\LaravelFactory\\Tests\\Database\\Factories\\": "tests/database/factories"
         }
     },
     "extra": {
@@ -35,9 +36,14 @@
         }
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true
+        }
     },
     "scripts": {
         "test": "./vendor/bin/phpunit"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

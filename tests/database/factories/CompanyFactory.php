@@ -1,20 +1,35 @@
 <?php
 
-use Faker\Generator;
-use Makeable\LaravelFactory\FactoryBuilder;
-use Makeable\LaravelFactory\Tests\Stubs\Company;
-use Makeable\LaravelFactory\Tests\Stubs\User;
+namespace Makeable\LaravelFactory\Tests\Database\Factories;
 
-$factory->define(Company::class, function (Generator $faker) {
-    return ['name' => $faker->company];
-});
-$factory->preset(Company::class, 'startup', function (FactoryBuilder $company, Generator $faker) {
-    $company->with(1, 'departments')->with(1, 'departments.employees');
-});
-$factory->state(Company::class, 'withOwner', function (Generator $faker) {
-    return [
-        'owner_id' => function () {
-            return factory(User::class)->create()->id;
-        },
-    ];
-});
+use App\Models\User;
+use Makeable\LaravelFactory\Factory;
+use Makeable\LaravelFactory\Tests\Stubs\Company;
+
+class CompanyFactory extends Factory
+{
+    protected $model = Company::class;
+
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->company,
+        ];
+    }
+
+    public function startup()
+    {
+        return $this
+            ->with(1, 'departments')
+            ->with(1, 'departments.employees');
+    }
+
+    public function withOwner()
+    {
+        return $this->state([
+            'owner_id' => function () {
+                return User::factory()->create()->id;
+            },
+        ]);
+    }
+}

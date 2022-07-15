@@ -3,7 +3,6 @@
 namespace Makeable\LaravelFactory\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use InvalidArgumentException;
 use Makeable\LaravelFactory\Tests\Stubs\Company;
 use Makeable\LaravelFactory\Tests\Stubs\Customer;
 use Makeable\LaravelFactory\Tests\Stubs\User;
@@ -16,15 +15,15 @@ class StateTest extends TestCase
     /** @test **/
     public function it_can_apply_a_state()
     {
-        $customer = $this->factory(Customer::class)->state('happy')->create();
+        $customer = Customer::factory()->happy()->create();
 
         $this->assertEquals(5, $customer->satisfaction);
     }
 
     /** @test **/
-    public function it_filters_null_states()
+    public function it_filters_null_args()
     {
-        $customer = $this->factory(Customer::class)->state(null)->create();
+        $customer = Customer::factory()->apply(null)->create();
 
         $this->assertInstanceOf(Customer::class, $customer);
     }
@@ -32,15 +31,15 @@ class StateTest extends TestCase
     /** @test **/
     public function it_throws_exception_when_missing_state()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\BadMethodCallException::class);
 
-        $this->factory(Customer::class)->state('foobar')->create();
+        Customer::factory()->foobar()->create();
     }
 
     /** @test **/
     public function multiple_states_can_be_passed_for_relations_inline_individually()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with(1, 'active', 'flagship', 'departments')
             ->create();
 
@@ -52,7 +51,7 @@ class StateTest extends TestCase
     /** @test **/
     public function multiple_states_can_be_passed_for_relations_inline_as_array()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with(1, ['active', 'flagship'], 'departments')
             ->create();
 
@@ -62,9 +61,9 @@ class StateTest extends TestCase
     }
 
     /** @test **/
-    public function it_can_apply_a_preset()
+    public function it_can_apply_what_was_formerly_know_as_a_preset()
     {
-        $company = $this->factory(Company::class)->preset('startup')->create();
+        $company = Company::factory()->startup()->create();
 
         $this->assertEquals(1, $company->departments->count());
         $this->assertEquals(1, $company->departments->first()->employees->count());
@@ -73,7 +72,7 @@ class StateTest extends TestCase
     /** @test **/
     public function presets_can_be_passed_for_relations_inline()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with(1, 'mediumSized', 'departments')
             ->create();
 
@@ -85,7 +84,7 @@ class StateTest extends TestCase
     /** @test **/
     public function regression_states_works_with_nested_relations()
     {
-        $company = $this->factory(Company::class)
+        $company = Company::factory()
             ->with(1, 'active', 'departments')
             ->with(2, 'departments.employees')
             ->create();
@@ -93,5 +92,15 @@ class StateTest extends TestCase
         $this->assertEquals(1, $company->departments->count());
         $this->assertEquals(2, $company->departments->first()->employees->count());
         $this->assertEquals(1, $company->departments->first()->active);
+    }
+
+    /** @test **/
+    public function sequence_accepts_state_names()
+    {
+        $customer = Customer::factory()->sequence('happy', 'unhappy', ['satisfaction' => 3]);
+
+        $this->assertEquals(5, $customer->make()->satisfaction);
+        $this->assertEquals(1, $customer->make()->satisfaction);
+        $this->assertEquals(3, $customer->make()->satisfaction);
     }
 }

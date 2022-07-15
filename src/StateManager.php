@@ -49,7 +49,7 @@ class StateManager
      *
      * @param  string  $class
      * @param  string  $name
-     * @param  callable|array $builder
+     * @param  callable|array  $builder
      * @return $this
      */
     public function define($class, $name, $builder)
@@ -63,7 +63,7 @@ class StateManager
      * Check if a definition exists.
      *
      * @param $class
-     * @param null $name
+     * @param  null  $name
      * @return bool
      */
     public function definitionExists($class, $name = null)
@@ -185,7 +185,7 @@ class StateManager
      *
      * @param $class
      * @param $name
-     * @param callable $callback
+     * @param  callable  $callback
      * @return $this
      */
     public function afterMaking($class, $name, callable $callback)
@@ -200,7 +200,7 @@ class StateManager
      *
      * @param $class
      * @param $name
-     * @param callable $callback
+     * @param  callable  $callback
      * @return $this
      */
     public function afterCreating($class, $name, callable $callback)
@@ -213,8 +213,8 @@ class StateManager
     /**
      * Determine if a callback exists on a given model.
      *
-     * @param string $class
-     * @param string $name
+     * @param  string  $class
+     * @param  string  $name
      * @return bool
      */
     public function afterCallbackExists($class, $name)

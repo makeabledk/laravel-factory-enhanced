@@ -32,7 +32,7 @@ trait BuildsRelationships
     /**
      * Load a RelationRequest onto current FactoryBuilder.
      *
-     * @param RelationRequest $request
+     * @param  RelationRequest  $request
      * @return $this
      */
     public function loadRelation(RelationRequest $request)
@@ -64,7 +64,7 @@ trait BuildsRelationships
     /**
      * Build a factory for given RelationRequest.
      *
-     * @param RelationRequest $request
+     * @param  RelationRequest  $request
      * @return FactoryBuilder
      */
     protected function buildFactoryForRequest($request)
@@ -82,7 +82,7 @@ trait BuildsRelationships
     /**
      * Create all requested BelongsTo relations.
      *
-     * @param Model $child
+     * @param  Model  $child
      */
     protected function createBelongsTo($child)
     {
@@ -99,7 +99,7 @@ trait BuildsRelationships
     /**
      * Create all requested BelongsToMany relations.
      *
-     * @param Model $sibling
+     * @param  Model  $sibling
      */
     protected function createBelongsToMany($sibling)
     {
@@ -118,7 +118,7 @@ trait BuildsRelationships
     /**
      * Create all requested HasMany relations.
      *
-     * @param Model $parent
+     * @param  Model  $parent
      */
     protected function createHasMany($parent)
     {

@@ -141,6 +141,24 @@ The above example will create 1x team that has
 - 2x online servers
 - 1x offline servers with 3 sites
 
+### Filling attributes in relationships
+
+You may fill attributes on a relationship by passing them as an argument to the `with()` method.
+
+```php
+factory(Team::class)    
+    ->with(2, 'servers', ['name' => 'laravel.com'])
+    ->create();
+```
+
+If the relation is a belongs-to-many relationship, you may also fill attributes on the pivot model by prefixing the attribute name with `pivot.`.
+
+```php
+factory(Team::class)    
+    ->with(2, 'users', ['pivot.role' => 'admin'])
+    ->create();
+```
+
 ### Using closures for customization
 
 In addition to passing *count* and *state* directly into the `with` function, you may also pass a closure that will receive the `FactoryBuilder` instance directly.
@@ -158,6 +176,20 @@ factory(Team::class)
     ->create();
 ```
 
+### Using apply()
+
+All of the above examples of how you might configure a relationship using the `with()` method, can also be applied on the base model using the `apply()` method.
+
+For example:
+
+```php
+factory(Server::class)
+    ->apply(2, 'online', ['name' => 'laravel.com'])
+    ->with(3, 'mysql', 'databases')
+    ->create();
+```
+
+This would create 2 online servers each with 3 mysql databases.
 
 ### Introducing presets
 
@@ -242,6 +274,7 @@ factory(Server::class)->with(1, 'sites', function (FactoryBuilder $sites) {
 
 These are the provided methods on the `FactoryBuilder` instance in addition to the core methods.
 
+- apply
 - fill
 ->fillPivot (only applicable on BelongsToMany
 - odds

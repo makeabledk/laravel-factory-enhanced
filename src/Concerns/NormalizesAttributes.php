@@ -9,7 +9,7 @@ trait NormalizesAttributes
     /**
      * Ensure a query result is returned as a collection.
      *
-     * @param mixed $result
+     * @param  mixed  $result
      * @return \Illuminate\Support\Collection
      */
     protected function collect($result = null)

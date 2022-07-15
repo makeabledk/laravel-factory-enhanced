@@ -48,7 +48,7 @@ class TestCase extends BaseTestCase
     }
 
     /**
-     * @param null $class
+     * @param  null  $class
      * @return Factory | FactoryBuilder
      */
     protected function factory($class = null)

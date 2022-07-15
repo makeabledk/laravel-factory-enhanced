@@ -52,7 +52,7 @@ class FactoryBuilder
      * Create an new builder instance.
      *
      * @param  string  $class
-     * @param  StateManager $stateManager
+     * @param  StateManager  $stateManager
      * @param  \Faker\Generator  $faker
      * @return void
      */
@@ -96,7 +96,7 @@ class FactoryBuilder
     /**
      * Fill attributes on the model.
      *
-     * @param array|callable $attributes
+     * @param  array|callable  $attributes
      * @return $this
      */
     public function fill($attributes)
@@ -109,7 +109,7 @@ class FactoryBuilder
     /**
      * Fill attributes on the pivot model.
      *
-     * @param array|callable $attributes
+     * @param  array|callable  $attributes
      * @return $this
      */
     public function fillPivot($attributes)
@@ -124,9 +124,9 @@ class FactoryBuilder
      *
      * Example odds: 50, '50%', 1/2
      *
-     * @param mixed $odds
-     * @param callable $callback
-     * @param callable|null $default
+     * @param  mixed  $odds
+     * @param  callable  $callback
+     * @param  callable|null  $default
      * @return $this
      */
     public function odds($odds, $callback, $default = null)
@@ -206,7 +206,7 @@ class FactoryBuilder
     /**
      * Pass the builder to the given callback and then return it.
      *
-     * @param callable $callback
+     * @param  callable  $callback
      * @return $this
      */
     public function tap($callback)
@@ -232,9 +232,9 @@ class FactoryBuilder
     /**
      * Apply the callback if the value is truthy.
      *
-     * @param bool $value
-     * @param callable $callback
-     * @param callable|null $default
+     * @param  bool  $value
+     * @param  callable  $callback
+     * @param  callable|null  $default
      * @return $this
      */
     public function when($value, $callback, $default = null)
@@ -251,7 +251,7 @@ class FactoryBuilder
     /**
      * Build the model with specified relations.
      *
-     * @param mixed ...$args
+     * @param  mixed  ...$args
      * @return FactoryBuilder
      */
     public function with(...$args)
@@ -270,7 +270,7 @@ class FactoryBuilder
      * created on the same relation, so that ie. multiple
      * has-many relations can be configured differently.
      *
-     * @param mixed ...$args
+     * @param  mixed  ...$args
      * @return FactoryBuilder
      */
     public function andWith(...$args)
@@ -358,8 +358,8 @@ class FactoryBuilder
     /**
      * Build the results to either a single item or collection of items.
      *
-     * @param callable $collect
-     * @param callable $item
+     * @param  callable  $collect
+     * @param  callable  $item
      * @return mixed
      */
     protected function buildResults($collect, $item)
@@ -436,8 +436,8 @@ class FactoryBuilder
      * Run attribute closures, merge resulting attributes, and
      * finally expand to their underlying values.
      *
-     * @param Collection|array $attributes
-     * @param array $inlineAttributes
+     * @param  Collection|array  $attributes
+     * @param  array  $inlineAttributes
      * @return array
      */
     protected function mergeAndExpandAttributes($attributes, array $inlineAttributes = [])
@@ -497,8 +497,8 @@ class FactoryBuilder
     /**
      * Call after callbacks for each state on model.
      *
-     * @param array $afterCallbacks
-     * @param Model $model
+     * @param  array  $afterCallbacks
+     * @param  Model  $model
      * @return void
      */
     protected function callAfter(array $afterCallbacks, $model)

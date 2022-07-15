@@ -296,8 +296,8 @@ Team::factory()
     ->with('servers', fn (ServerFactory $servers) => $servers
         ->count(2)
         ->active()
-        ->with(3, 'sites');
-    })
+        ->with(3, 'sites')
+    )
     ->create();
 ```
 
@@ -322,7 +322,7 @@ These are the provided methods on the `Factory` instance in addition to the core
 
 - apply
 - fill
-->fillPivot (only applicable on BelongsToMany
+- fillPivot (only applicable on BelongsToMany
 - pipe
 - tap
 - with

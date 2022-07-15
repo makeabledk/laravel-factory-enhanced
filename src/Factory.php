@@ -23,8 +23,8 @@ class Factory implements ArrayAccess
     /**
      * Create a new factory instance.
      *
-     * @param  \Faker\Generator $faker
-     * @param StateManager $stateManager
+     * @param  \Faker\Generator  $faker
+     * @param  StateManager  $stateManager
      */
     public function __construct(Faker $faker, StateManager $stateManager)
     {
@@ -77,9 +77,9 @@ class Factory implements ArrayAccess
     /**
      * Define a preset with a callable.
      *
-     * @param string $class
-     * @param string $state
-     * @param callable $callable
+     * @param  string  $class
+     * @param  string  $state
+     * @param  callable  $callable
      * @return $this
      */
     public function preset($class, $state, callable $callable)
@@ -139,7 +139,7 @@ class Factory implements ArrayAccess
      *
      * @param  string  $class
      * @param  callable  $callback
-     * @param  string $name
+     * @param  string  $name
      * @return $this
      */
     public function afterCreating($class, callable $callback, $name = 'default')

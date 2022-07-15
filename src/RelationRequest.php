@@ -28,6 +28,7 @@ class RelationRequest
     /**
      * The given inline arguments except relation path
      * .
+     *
      * @var array
      */
     protected $args;
@@ -49,7 +50,7 @@ class RelationRequest
      *
      * @param $class
      * @param $batch
-     * @param mixed $args
+     * @param  mixed  $args
      */
     public function __construct($class, $batch, $args)
     {
@@ -99,7 +100,7 @@ class RelationRequest
     /**
      * Get the nested path beyond immediate relation.
      *
-     * @param string|null $path
+     * @param  string|null  $path
      * @return string
      */
     public function getNestedPath($path = null)
@@ -127,7 +128,7 @@ class RelationRequest
     /**
      * Get the name of the immediate relation.
      *
-     * @param string|null $path
+     * @param  string|null  $path
      * @return mixed
      */
     public function getRelationName($path = null)
@@ -150,7 +151,7 @@ class RelationRequest
     /**
      * Loop through arguments to detect a relation name.
      *
-     * @param Collection $args
+     * @param  Collection  $args
      * @return Collection
      */
     protected function findAndPopRelationName(Collection $args)
@@ -189,7 +190,7 @@ class RelationRequest
     /**
      * Fail build with a readable exception message.
      *
-     * @param Collection $args
+     * @param  Collection  $args
      */
     protected function failOnMissingRelation(Collection $args)
     {
@@ -211,7 +212,7 @@ class RelationRequest
      * that they might have intended could be a relation,
      * but was invalid. Helpful for debugging purposes.
      *
-     * @param Collection $args
+     * @param  Collection  $args
      * @return string
      */
     protected function getPossiblyIntendedRelationships(Collection $args)

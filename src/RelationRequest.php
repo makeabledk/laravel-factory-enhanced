@@ -46,7 +46,6 @@ class RelationRequest
     {
         [$this->model, $this->batch, $this->arguments] = [$model, $batch, collect($arguments)];
 
-
         $this->extractRelationFromArguments();
         dump($this);
         $this->failOnMissingRelation();
@@ -62,6 +61,7 @@ class RelationRequest
         dump(
             $relatedClass = $this->getRelatedClass()
         );
+
         return new static(
             $relatedClass,
             $this->batch,

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
@@ -45,7 +46,9 @@ class RelationRequest
     {
         [$this->model, $this->batch, $this->arguments] = [$model, $batch, collect($arguments)];
 
+
         $this->extractRelationFromArguments();
+        dump($this);
         $this->failOnMissingRelation();
     }
 
@@ -56,8 +59,11 @@ class RelationRequest
      */
     public function createNestedRequest()
     {
+        dump(
+            $relatedClass = $this->getRelatedClass()
+        );
         return new static(
-            $this->getRelatedClass(),
+            $relatedClass,
             $this->batch,
             $this->arguments->values()->push($this->getNestedPath())
         );
@@ -85,6 +91,20 @@ class RelationRequest
      */
     public function getRelatedClass()
     {
+        // When creating a MorphTo relation, we don't know which related model to create.
+        // In this case we'll expect the developer to provide a related model class.
+        if ($this->getRelation() instanceof MorphTo && ! $this->hasNesting()) {
+            foreach ($this->arguments as $index => $arg) {
+                if (is_string($arg) && class_exists($arg) && (new $arg) instanceof Model) {
+                    return $this->arguments->pull($index);
+                }
+            }
+
+            throw new BadMethodCallException(
+                "Please specify a related model when generating MorphTo relations. Missing related class on requested relation: {$this->model}@".$this->getRelationName()
+            );
+        }
+
         return get_class($this->getRelation()->getRelated());
     }
 
@@ -181,9 +201,9 @@ class RelationRequest
                 'No matching relations could be found on model ['.$this->model.']. '.
                 'Following possible relation names was checked: '.
                 (
-                    ($testedRelations = $this->getPossiblyIntendedRelationships())->isEmpty()
-                        ? '[NO POSSIBLE RELATION NAMES FOUND]'
-                        : '['.$testedRelations->implode(', ').']'
+                ($testedRelations = $this->getPossiblyIntendedRelationships())->isEmpty()
+                    ? '[NO POSSIBLE RELATION NAMES FOUND]'
+                    : '['.$testedRelations->implode(', ').']'
                 )
             );
         }

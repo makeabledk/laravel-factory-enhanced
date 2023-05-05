@@ -10,7 +10,6 @@ namespace {
 }
 
 namespace Makeable\LaravelFactory {
-
     use Illuminate\Database\Eloquent\Model;
 
     function count($count)

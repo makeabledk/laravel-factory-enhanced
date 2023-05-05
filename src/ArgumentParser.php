@@ -2,6 +2,7 @@
 
 namespace Makeable\LaravelFactory;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -21,6 +22,10 @@ class ArgumentParser
 
             if (is_array($arg) && ! isset($arg[0])) {
                 return static::fill($factory, $arg);
+            }
+
+            if ($arg instanceof Model) {
+                return $factory->for($arg);
             }
 
             if (is_callable($arg) && ! is_string($arg)) {

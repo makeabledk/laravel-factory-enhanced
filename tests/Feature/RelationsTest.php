@@ -12,6 +12,7 @@ use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
+use function PHPUnit\Framework\assertEquals;
 
 use function Makeable\LaravelFactory\count;
 use function Makeable\LaravelFactory\fill;
@@ -258,6 +259,22 @@ class RelationsTest extends TestCase
 
         $this->assertEquals(1, $company->departments->count());
         $this->assertInstanceOf(User::class, $company->departments->first()->manager);
+    }
+
+    /** @test **/
+    public function it_accepts_model_instances_as_for_belongs_to()
+    {
+        // Using apply
+        $company = Company::factory()->create();
+        $department = Department::factory()->apply($company)->create();
+        $this->assertEquals($company->id, $department->company_id);
+
+        // Using with
+        $company = Company::factory()->create();
+        $manager = User::factory()
+            ->with(1, 'departments', $company)
+            ->create();
+        $this->assertEquals($company->id, $manager->departments->first()->company_id);
     }
 
     // HELPER FUNCTIONS

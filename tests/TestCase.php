@@ -3,12 +3,7 @@
 namespace Makeable\LaravelFactory\Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Support\Facades\Hash;
 use Makeable\LaravelFactory\Factory;
-//use Makeable\LaravelFactory\FactoryBuilder;
-//use Makeable\LaravelFactory\FactoryServiceProvider;
-//use Makeable\LaravelFactory\StateManager;
-use Makeable\LaravelFactory\Tests\Stubs\User;
 
 class TestCase extends BaseTestCase
 {
@@ -36,11 +31,6 @@ class TestCase extends BaseTestCase
             'prefix' => '',
         ]);
 
-//        $app->singleton(StateManager::class);
-
-        // Make tests faster!
-//        Hash::setRounds(4);
-
         return $app;
     }
 
@@ -51,21 +41,5 @@ class TestCase extends BaseTestCase
     protected function factory($class = null)
     {
         return Factory::factoryForModel($class);
-
-//        $factory = app(Factory::class);
-//
-//        if ($class) {
-//            return $factory->of($class);
-//        }
-//
-//        return $factory;
     }
-
-//    /**
-//     * @return User
-//     */
-//    protected function user()
-//    {
-//        return factory(User::class)->create();
-//    }
 }

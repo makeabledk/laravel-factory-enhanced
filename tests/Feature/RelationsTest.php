@@ -12,7 +12,6 @@ use Makeable\LaravelFactory\Tests\Stubs\Department;
 use Makeable\LaravelFactory\Tests\Stubs\Image;
 use Makeable\LaravelFactory\Tests\Stubs\User;
 use Makeable\LaravelFactory\Tests\TestCase;
-use function PHPUnit\Framework\assertEquals;
 
 use function Makeable\LaravelFactory\count;
 use function Makeable\LaravelFactory\fill;

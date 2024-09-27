@@ -4,9 +4,15 @@ namespace Makeable\LaravelFactory\Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Makeable\LaravelFactory\Factory;
+use Makeable\LaravelFactory\FactoryServiceProvider;
 
 class TestCase extends BaseTestCase
 {
+    protected $connectionsToTransact = [
+        'primary',
+        'secondary',
+    ];
+
     /**
      * Creates the application.
      *
@@ -14,9 +20,10 @@ class TestCase extends BaseTestCase
      */
     public function createApplication()
     {
+        /** @var \Illuminate\Foundation\Application $app */
         $app = require __DIR__.'/../vendor/laravel/laravel/bootstrap/app.php';
         $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-//        $app->register(FactoryServiceProvider::class);
+        $app->register(FactoryServiceProvider::class);
         $app->useDatabasePath(__DIR__.'/database');
 
         $app['config']->set('database.default', 'primary');

@@ -37,8 +37,8 @@ class RelationRequest
     /**
      * Create a new relationship request.
      *
-     * @param $model
-     * @param $batch
+     * @param  $model
+     * @param  $batch
      * @param  mixed  $arguments
      */
     public function __construct($model, $batch, $arguments)
@@ -152,7 +152,7 @@ class RelationRequest
     /**
      * Check if a string represents a valid relation path.
      *
-     * @param $path
+     * @param  $path
      * @return bool
      */
     protected function isValidRelation($path)

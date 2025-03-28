@@ -30,7 +30,7 @@ foreach ($users as $user) {
 $team = Team::factory()
     ->hasAttached(
         User::factory()->count(2),
-        ['active' => true]
+        ['role' => 'admin']
     )
     ->create();
 

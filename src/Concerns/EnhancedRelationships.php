@@ -64,7 +64,7 @@ trait EnhancedRelationships
         return $this;
     }
 
-    protected function pushRelatedFactory(RelationRequest $request, self $factory = null): Factory
+    protected function pushRelatedFactory(RelationRequest $request, ?self $factory = null): Factory
     {
         $path = implode('.', [
             $request->loadMethod(),
